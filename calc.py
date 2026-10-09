@@ -266,3 +266,64 @@ def _build_lines(basic, hra, gpa, employee_pf, pt, esic_employee, income_tax,
     if vp_annual:
         lines.append(_line("Variable Pay", 0.0, months, "employer", "paid periodically against target"))
     return lines
+
+
+def solve_ctc_for_take_home(inputs: dict, settings: dict | None, min_wage: float | None,
+                            target_monthly: float) -> dict:
+    """Reverse solve: the smallest *payable* annual CTC that reaches a monthly take-home.
+
+    A minimum wage pins the Basic, so a CTC below what that costs is not really
+    payable — the search therefore stays inside the feasible region, and if the
+    target is lower than that floor it says so rather than inventing a CTC.
+    """
+    base = dict(inputs)
+    base.pop("proposed_ctc", None)
+    target = float(target_monthly or 0)
+
+    probe = compute({**base, "proposed_ctc": 0}, settings, min_wage)
+    floor_ctc = 0 if probe.get("feasible") else int(round(probe.get("min_ctc_required") or 0))
+    floor_result = compute({**base, "proposed_ctc": floor_ctc}, settings, min_wage)
+    floor_take_home = floor_result.get("take_home") or 0
+
+    def result_at(ctc):
+        return compute({**base, "proposed_ctc": ctc}, settings, min_wage)
+
+    def pays(ctc):
+        result = result_at(ctc)
+        return bool(result.get("feasible")) and (result.get("take_home") or 0) >= target
+
+    if target <= 0:
+        return {"ctc": floor_ctc, "achieved": False, "result": floor_result,
+                "floor_ctc": floor_ctc, "floor_take_home": floor_take_home, "below_minimum": False}
+
+    if target <= floor_take_home:
+        return {"ctc": floor_ctc, "achieved": True, "result": floor_result,
+                "floor_ctc": floor_ctc, "floor_take_home": floor_take_home, "below_minimum": True}
+
+    hi = max(12.0 * target * 4.0, 200_000.0)
+    for _ in range(25):
+        if pays(hi):
+            break
+        hi *= 2.0
+
+    lo = float(floor_ctc)
+    for _ in range(80):
+        mid = (lo + hi) / 2.0
+        if pays(mid):
+            hi = mid
+        else:
+            lo = mid
+
+    guess = int(round(hi))
+    best = None
+    for candidate in range(max(floor_ctc, guess - 300), guess + 301):
+        if pays(candidate):
+            best = (candidate, result_at(candidate))
+            break
+    if best is None:
+        best = (guess, result_at(guess))
+
+    ctc, result = best
+    return {"ctc": ctc, "achieved": (result.get("take_home") or 0) >= target - 0.5,
+            "result": result, "floor_ctc": floor_ctc, "floor_take_home": floor_take_home,
+            "below_minimum": False}

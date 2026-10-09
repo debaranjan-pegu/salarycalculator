@@ -451,6 +451,22 @@ class Handler(BaseHTTPRequestHandler):
 
         if method == "POST" and path == "/api/calc":
             return self._send_json(self._calc(conn, self._read_json()))
+
+        if method == "POST" and path == "/api/solve":
+            body = self._read_json()
+            country_id, settings, min_wage, symbol = self._resolve(conn, body)
+            try:
+                target = float(body.get("target_take_home") or 0)
+            except (TypeError, ValueError):
+                target = 0.0
+            solved = calc.solve_ctc_for_take_home(dict(body), settings, min_wage, target)
+            result = solved["result"]
+            result["currency_symbol"] = symbol
+            return self._send_json({"ctc": solved["ctc"], "achieved": solved["achieved"],
+                                    "target_take_home": target,
+                                    "below_minimum": solved.get("below_minimum", False),
+                                    "floor_take_home": solved.get("floor_take_home"),
+                                    "result": result})
         if method == "POST" and path == "/api/export":
             return self._export(conn, self._read_json())
 

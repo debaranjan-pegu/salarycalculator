@@ -618,6 +618,18 @@ function viewCalculator() {
         <div class="field"><label>Increment %</label>
           <input type="number" step="0.1" data-field="increment_pct" value="${d.increment_pct ?? ""}" /></div>
       </div>
+      <div class="field">
+        <label>Proposed CTC (annual)</label>
+        <input type="number" data-field="proposed_ctc" value="${d.proposed_ctc ?? ""}" placeholder="auto — previous CTC + increment" />
+        <div class="field-hint" id="proposedHint"></div>
+      </div>
+      <div class="inline" style="gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:14px">
+        <div class="field" style="flex:1; min-width:170px; margin:0">
+          <label>Reverse — target take-home / month</label>
+          <input type="number" id="targetTakeHome" placeholder="e.g. 25000" />
+        </div>
+        <button class="btn" data-act="solve">🔎 Solve for the CTC</button>
+      </div>
       <div class="row">
         <div class="field"><label>Variable pay %</label>
           <input type="number" step="0.1" data-field="vp_pct" value="${d.vp_pct ?? ""}" /></div>
@@ -684,9 +696,56 @@ async function recompute() {
     if (token !== recalcToken) return;
     S.result = result;
     patchResults(result);
+    refreshProposedUi();
   } catch (err) {
     if (token === recalcToken && err.message !== "Please sign in.") toast("Calculation failed: " + err.message, "bad");
   }
+}
+
+/** Keeps the Proposed CTC field, the implied increment and the hint in step. */
+function refreshProposedUi() {
+  const d = S.draft;
+  if (!d) return;
+  const inc = document.querySelector('[data-field="increment_pct"]');
+  const proposed = document.querySelector('[data-field="proposed_ctc"]');
+  const hint = document.getElementById("proposedHint");
+  if (!inc || !proposed || !hint) return;            // not on the calculator view
+
+  const using = d.proposed_ctc != null && d.proposed_ctc !== "";
+  const auto = Math.round(Number(d.previous_ctc || 0) * (1 + Number(d.increment_pct || 0) / 100));
+
+  inc.disabled = using;
+  if (using && Number(d.previous_ctc)) {
+    inc.value = ((Number(d.proposed_ctc) / Number(d.previous_ctc) - 1) * 100).toFixed(2);
+  }
+  proposed.placeholder = using ? "" : `auto — ${sym()}${fmtNum(auto)}`;
+  hint.className = "field-hint";
+  if (using && Number(d.previous_ctc)) {
+    const pct = (Number(d.proposed_ctc) / Number(d.previous_ctc) - 1) * 100;
+    hint.innerHTML = `Implied increment <b>${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%</b> over the previous CTC · `
+      + '<button class="link-btn" data-act="clear-proposed">use the increment instead</button>';
+  } else {
+    hint.innerHTML = `Leave blank to work from the increment — currently <b>${sym()}${fmtNum(auto)}</b>.`;
+  }
+}
+
+async function solveTakeHome() {
+  const input = document.getElementById("targetTakeHome");
+  const target = Number(input && input.value);
+  if (!target || target <= 0) { toast("Enter the monthly take-home you want first.", "bad"); return; }
+  try {
+    const solved = await api("POST", "/api/solve", { ...calcPayload(), target_take_home: target });
+    S.draft.proposed_ctc = solved.ctc;
+    render();
+    if (solved.below_minimum) {
+      toast(`The minimum wage sets the floor: the lowest CTC is ${sym()}${fmtNum(solved.ctc)}, which pays `
+        + `${sym()}${fmtNum(solved.floor_take_home)} in hand — more than you asked for.`, "");
+    } else {
+      toast(solved.achieved
+        ? `CTC set to ${sym()}${fmtNum(solved.ctc)} for ${sym()}${fmtNum(target)} in hand.`
+        : `Closest payable CTC is ${sym()}${fmtNum(solved.ctc)}.`, solved.achieved ? "good" : "bad");
+    }
+  } catch (err) { toast("Could not solve: " + err.message, "bad"); }
 }
 
 const COMP_SEGS = [
@@ -804,11 +863,18 @@ function patchResults(r) {
     if (leg) leg.style.display = vals[s.key] > 0 ? "" : "none";
   });
 
-  setHtml("notices", (r.warnings || []).map((w) => {
+  const noticeHtml = (r.warnings || []).map((w) => {
     const kind = /cannot be honoured/.test(w) ? "bad" : /No minimum wage/.test(w) ? "info" : "warn";
     const glyph = kind === "bad" ? "⛔" : kind === "info" ? "ℹ️" : "⚠️";
     return `<div class="notice ${kind}"><span class="glyph">${glyph}</span><div>${esc(w)}</div></div>`;
-  }).join(""));
+  }).join("");
+  const fix = (r.min_ctc_required && !r.feasible)
+    ? `<div class="inline" style="margin:-2px 0 10px; flex-wrap:wrap">
+         <button class="btn sm primary" data-act="use-required-ctc">Set the CTC to ${num(r.min_ctc_required)}</button>
+         <span class="small muted">the lowest CTC that can legally carry this minimum wage</span>
+       </div>`
+    : "";
+  setHtml("notices", noticeHtml + fix);
 
   const er = r.employer_pf + r.gratuity + r.esic_employer + r.asset_allowance;
   const cells = {
@@ -1482,7 +1548,6 @@ function onInput(e) {
   if (!raw) val = val === "" ? null : Number(val);
   S.draft[key] = val;
   if (key === "company_id") S.draft.company_name = (companyById(val) || {}).name || "";
-  if (key === "previous_ctc") S.draft.proposed_ctc = null;
   recompute();
 }
 
@@ -1668,6 +1733,13 @@ async function onViewClick(e) {
     else if (act === "cancel-edit") { S.editingBreakupId = null; S.result = null; S.draft = sampleDraft(); render(); }
     else if (act === "print") printResult();
     else if (act === "excel") exportExcel();
+    else if (act === "solve") await solveTakeHome();
+    else if (act === "clear-proposed") { S.draft.proposed_ctc = null; render(); }
+    else if (act === "use-required-ctc") {
+      S.draft.proposed_ctc = S.result ? S.result.min_ctc_required : null;
+      render();
+      toast("CTC raised to the minimum that can carry this wage.", "good");
+    }
     else if (act === "sample") { S.draft = sampleDraft(); S.result = null; S.editingBreakupId = null; render(); }
     else if (act === "clear") { S.draft = { ...DEFAULT_DRAFT, country_id: S.draft.country_id, category_id: S.draft.category_id }; S.result = null; S.editingBreakupId = null; render(); }
     else if (act === "save-settings") await saveSettings();
