@@ -184,6 +184,10 @@ function enhanceCombos(root = document) {
 }
 function closeAllCombos() { $$(".combo.open").forEach((c) => c.classList.remove("open")); }
 function closeUserMenu() { $$(".user-pop.open").forEach((p) => p.classList.remove("open")); }
+function closeNotes() { $$(".notes.open").forEach((n) => n.classList.remove("open")); }
+/* Below this width the sidebar is a drawer, not a column. */
+function narrow() { return window.matchMedia("(max-width: 860px)").matches; }
+function closeNav() { $("#appRoot").classList.remove("nav-open"); }
 function refreshCombo(sel) {
   const wrap = sel.nextElementSibling;
   if (wrap && wrap.classList.contains("combo")) {
@@ -1924,15 +1928,31 @@ async function onViewClick(e) {
     return;
   }
   const nav = e.target.closest(".nav-item");
-  if (nav) { closeUserMenu(); setView(nav.dataset.view); return; }
+  if (nav) { closeUserMenu(); closeNav(); setView(nav.dataset.view); return; }
   if (e.target.closest("[data-modal]") || e.target.closest(".overlay")) return;
   if (e.target.closest(".user-pop")) return;
+
+  /* tapping the scrim (the drawer's ::before reports #appRoot) closes the drawer */
+  if (e.target.id === "appRoot" && $("#appRoot").classList.contains("nav-open")) { closeNav(); return; }
+
+  /* no hover on a touch screen, so a tap opens the note list */
+  const notePill = e.target.closest(".notes-pill");
+  if (notePill) {
+    const box = notePill.closest(".notes");
+    const wasOpen = box.classList.contains("open");
+    closeNotes();
+    box.classList.toggle("open", !wasOpen);
+    return;
+  }
+
   closeAllCombos();
   closeUserMenu();
+  closeNotes();
 
   const toggle = e.target.closest("#sidebarToggle");
   if (toggle) {
     const app = $("#appRoot");
+    if (narrow()) { app.classList.toggle("nav-open"); return; }
     app.classList.toggle("collapsed");
     try { localStorage.setItem("salarycalc-sidebar", app.classList.contains("collapsed") ? "collapsed" : "open"); } catch (err) {}
     return;
@@ -2085,6 +2105,11 @@ document.addEventListener("DOMContentLoaded", () => {
     onSelectChange(e);
   });
   document.addEventListener("click", onViewClick);
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    closeNav();
+    closeNotes();
+  });
   syncThemeButtons();
   try {
     if (localStorage.getItem("salarycalc-sidebar") === "collapsed") $("#appRoot").classList.add("collapsed");
