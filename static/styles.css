@@ -375,7 +375,18 @@ select.native-hidden { display: none; }
 
 /* ============================================================ v1.3.2 polish */
 
-:root { --header-h: 64px; }
+:root {
+  --header-h: 64px;
+  --thead-bg: #131c36;                        /* opaque, so scrolled rows can't show through */
+  --section-bg: rgba(140, 160, 210, 0.20);    /* the grey band on a section heading row */
+}
+html[data-theme="light"] {
+  --thead-bg: #ffffff;
+  --section-bg: #e9ecf2;
+}
+
+/* clear grey band across a section heading row */
+tr.group-row td { background: var(--section-bg); }
 
 /* the sidebar brand sits on the same line as the header row */
 .sidebar { padding: 0 16px 22px; }

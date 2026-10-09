@@ -856,8 +856,8 @@ function resultsSkeleton() {
         <thead><tr><th>Component</th><th class="num">Per month</th><th class="num">Per annum</th></tr></thead>
         <tbody>
           <tr class="group-row"><td colspan="3">Earnings (cash)</td></tr>
-          ${row("Basic", "basic")}
-          ${row("HRA", "hra")}
+          ${row("Basic", "basic", ' <span class="muted small" data-v="basic_note"></span>')}
+          ${row("HRA", "hra", ' <span class="muted small" data-v="hra_note"></span>')}
           ${row("General Purpose Allowance", "gpa", ' <span class="muted small">· balancing component</span>')}
           ${total("Gross cash", "cash")}
           <tr class="group-row"><td colspan="3">Deductions (employee)</td></tr>
@@ -904,6 +904,10 @@ function patchResults(r) {
   set("level", r.level || "—");
   set("band", r.band || "—");
   set("insurance", r.insurance ? num(r.insurance) : "—");
+  set("basic_note", r.min_wage_applied
+    ? `· raised from ${num(r.computed_basic)} to the ${num(r.min_wage)} minimum wage`
+    : `· ${r.basic_pct}% of the monthly CTC`);
+  set("hra_note", r.hra > 0.5 ? `· ${r.hra_pct}% of Basic` : "· nothing left at this CTC");
   set("feasibility", r.feasible ? "CTC balanced ✓" : "CTC must rise");
   set("variance", (r.ctc_variance > 0 ? "+" : "") + num(r.ctc_variance));
   setHtml("floor_badge", r.min_wage > 0

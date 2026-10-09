@@ -12,8 +12,8 @@ import xlsx
 
 INK = "1E1B4B"        # indigo-950
 HEAD = "312E81"       # indigo-900
-SECTION = "E0E7FF"    # indigo-100
-SECTION_TX = "312E81"
+SECTION = "E9ECF2"    # grey band behind a section heading
+SECTION_TX = "334155"
 TOTAL_BG = "EEF2FF"
 CTC_BG = "DBEAFE"
 TAKE_BG = "FDE68A"
