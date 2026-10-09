@@ -296,6 +296,14 @@ class Handler(BaseHTTPRequestHandler):
             problem = _credentials_problem(email, username, password)
             if problem:
                 return self._send_json({"error": problem}, status=400)
+            # Normally unreachable (setup only exists while there are no accounts),
+            # but a race must give a clear message instead of a database error.
+            if db.get_user_by_login(conn, email):
+                return self._send_json({"error": "That email is already registered.",
+                                        "field": "email"}, status=400)
+            if db.get_user_by_login(conn, username):
+                return self._send_json({"error": "That username is already taken.",
+                                        "field": "username"}, status=400)
             recovery = auth.new_recovery_code()
             user = db.create_user(conn, email=email, username=username,
                                   display_name=body.get("display_name") or username,

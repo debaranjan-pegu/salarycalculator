@@ -251,19 +251,84 @@ function authShell(title, lead, body, foot = "") {
   </div></div>`;
 }
 
+let setupWatch = null;
+
+/** Live validation for the first-run form: format, match, and a usable button. */
+function bindSetupValidation() {
+  const name = $("#suName"), email = $("#suEmail"), user = $("#suUser");
+  const p1 = $("#suPass"), p2 = $("#suPass2"), btn = $('[data-auth="setup"]');
+  if (!btn || !email) return;
+  const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
+  const USER_RE = /^[A-Za-z0-9._-]{3,32}$/;
+
+  const hint = (sel, text, kind) => {
+    const el = $(sel);
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "field-hint" + (kind ? " " + kind : "");
+  };
+
+  const validate = () => {
+    const e = email.value.trim(), u = user.value.trim(), pw = p1.value, pw2 = p2.value;
+    const emailOk = EMAIL_RE.test(e), userOk = USER_RE.test(u);
+    hint("#suEmailHint", !e ? "" : (emailOk ? "" : "Enter a valid email, like name@company.com"),
+         emailOk ? "" : "bad");
+    hint("#suUserHint", !u ? "" : (userOk ? "" : "3–32 characters: letters, numbers, . _ -"),
+         userOk ? "" : "bad");
+    const pwIssues = [];
+    if (pw && pw.length < 8) pwIssues.push("at least 8 characters");
+    if (pw && !/[A-Za-z]/.test(pw)) pwIssues.push("a letter");
+    if (pw && !/\d/.test(pw)) pwIssues.push("a number");
+    hint("#suPassHint", pwIssues.length ? "Needs " + pwIssues.join(", ") : "", pwIssues.length ? "bad" : "");
+    const mismatch = pw2 && pw2 !== pw;
+    hint("#suPass2Hint", mismatch ? "Passwords do not match" : "", mismatch ? "bad" : "");
+    const ok = name.value.trim() && emailOk && userOk && pw && !pwIssues.length && !mismatch;
+    btn.disabled = !ok;
+  };
+
+  [name, email, user, p1, p2].forEach((el) => el && el.addEventListener("input", validate));
+  validate();
+}
+
+/** If the app gets set up while this screen is open, move to sign-in instead of stranding the user. */
+function watchSetupState() {
+  clearInterval(setupWatch);
+  setupWatch = setInterval(async () => {
+    if (S.authScreen !== "setup") { clearInterval(setupWatch); return; }
+    try {
+      const st = await api("GET", "/api/auth/status", undefined, { raw: true });
+      if (st.initialized) {
+        clearInterval(setupWatch);
+        showLogin("This app has already been set up on this machine. Please sign in.");
+      }
+    } catch (e) { /* offline is fine; keep waiting */ }
+  }, 5000);
+}
+
 function showSetup() {
   S.authScreen = "setup";
   showAuth(authShell("Welcome", "Create the administrator account for this installation. You can add more users afterwards.",
-    `<div class="field"><label>Full name</label><input id="suName" placeholder="e.g. Debaranjan Pegu" /></div>
-     <div class="field"><label>Email</label><input id="suEmail" type="email" placeholder="you@company.com" /></div>
-     <div class="field"><label>Username</label><input id="suUser" placeholder="admin" /></div>
+    `<div class="field"><label>Full name</label>
+       <input id="suName" placeholder="e.g. Debaranjan Pegu" /></div>
+     <div class="field"><label>Email</label>
+       <input id="suEmail" type="email" placeholder="you@company.com" autocomplete="email" />
+       <div class="field-hint" id="suEmailHint"></div></div>
+     <div class="field"><label>Username</label>
+       <input id="suUser" placeholder="admin" autocomplete="username" />
+       <div class="field-hint" id="suUserHint"></div></div>
      <div class="row">
-       <div class="field"><label>Password</label><input id="suPass" type="password" placeholder="min 8 chars, 1 number" /></div>
-       <div class="field"><label>Confirm password</label><input id="suPass2" type="password" /></div>
+       <div class="field"><label>Password</label>
+         <input id="suPass" type="password" placeholder="min 8 chars, 1 number" autocomplete="new-password" />
+         <div class="field-hint" id="suPassHint"></div></div>
+       <div class="field"><label>Confirm password</label>
+         <input id="suPass2" type="password" autocomplete="new-password" />
+         <div class="field-hint" id="suPass2Hint"></div></div>
      </div>
      <div class="notice info"><span class="glyph">🔐</span><div>Passwords are stored hashed (PBKDF2). This is a local app — keep the machine itself secure.</div></div>
      <button class="btn primary" data-auth="setup">Create administrator</button>`,
     ""));
+  bindSetupValidation();
+  watchSetupState();
 }
 
 function showLogin(message = "") {
@@ -318,11 +383,24 @@ function showChangePassword(forced) {
 async function doSetup() {
   const password = $("#suPass").value;
   if (password !== $("#suPass2").value) return toast("Passwords do not match.", "bad");
-  const res = await api("POST", "/api/auth/setup", {
-    email: $("#suEmail").value.trim(), username: $("#suUser").value.trim(),
-    display_name: $("#suName").value.trim(), password,
-  }, { raw: true });
-  S.user = res.user; S.version = res.version || S.version;
+  let res;
+  try {
+    res = await api("POST", "/api/auth/setup", {
+      email: $("#suEmail").value.trim(), username: $("#suUser").value.trim(),
+      display_name: $("#suName").value.trim(), password,
+    }, { raw: true });
+  } catch (err) {
+    clearInterval(setupWatch);
+    if (/already set up/i.test(err.message)) {
+      showLogin("This app has already been set up — please sign in instead.");
+      return;
+    }
+    toast(err.message, "bad");
+    return;
+  }
+  clearInterval(setupWatch);
+  S.user = res.user;
+  S.version = res.version || S.version;
   showRecoveryCode(res.recovery_code, "enter-app");
 }
 
@@ -1245,9 +1323,13 @@ function openUserForm(user) {
     body: `
       <div class="row">
         <div class="field"><label>Full name</label><input id="uName" value="${esc(user ? user.display_name : "")}" /></div>
-        <div class="field"><label>Username</label><input id="uUser" value="${esc(user ? user.username : "")}" /></div>
+        <div class="field"><label>Username</label>
+          <input id="uUser" value="${esc(user ? user.username : "")}" autocomplete="off" />
+          <div class="field-hint" id="uUserHint"></div></div>
       </div>
-      <div class="field"><label>Email</label><input id="uEmail" type="email" value="${esc(user ? user.email : "")}" /></div>
+      <div class="field"><label>Email</label>
+        <input id="uEmail" type="email" value="${esc(user ? user.email : "")}" autocomplete="off" />
+        <div class="field-hint" id="uEmailHint"></div></div>
       <div class="row">
         <div class="field"><label>Role</label><select id="uRole">${roleSel}</select></div>
         <div class="field"><label>Status</label><select id="uActive">
@@ -1269,6 +1351,37 @@ function openUserForm(user) {
       }
     },
   });
+  bindUserValidation(user);
+}
+
+/** Format + duplicate checks against the users already loaded, so nobody has to guess. */
+function bindUserValidation(editing) {
+  const name = $("#uName"), email = $("#uEmail"), user = $("#uUser"), btn = $('[data-save]');
+  if (!email || !user) return;
+  const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
+  const USER_RE = /^[A-Za-z0-9._-]{3,32}$/;
+  const others = S.users.filter((u) => !editing || u.id !== editing.id);
+
+  const hint = (sel, text, kind) => {
+    const el = $(sel);
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "field-hint" + (kind ? " " + kind : "");
+  };
+
+  const validate = () => {
+    const e = email.value.trim(), u = user.value.trim();
+    const emailTaken = others.some((o) => (o.email || "").toLowerCase() === e.toLowerCase());
+    const userTaken = others.some((o) => (o.username || "").toLowerCase() === u.toLowerCase());
+    const emailOk = EMAIL_RE.test(e), userOk = USER_RE.test(u);
+    hint("#uEmailHint", !e ? "" : (!emailOk ? "Enter a valid email address"
+      : (emailTaken ? "This email is already registered" : "")), emailOk && !emailTaken ? "" : "bad");
+    hint("#uUserHint", !u ? "" : (!userOk ? "3–32 characters: letters, numbers, . _ -"
+      : (userTaken ? "This username is taken" : "")), userOk && !userTaken ? "" : "bad");
+    if (btn) btn.disabled = !(name.value.trim() && emailOk && userOk && !emailTaken && !userTaken);
+  };
+  [name, email, user].forEach((el) => el && el.addEventListener("input", validate));
+  validate();
 }
 
 function showPassword(title, password) {

@@ -404,6 +404,13 @@ select.native-hidden { display: none; }
 .pw-toggle:hover { background: var(--btn-bg-hover); color: var(--text); }
 .pw-toggle svg { width: 18px; height: 18px; display: block; }
 
+/* inline field validation */
+.field-hint { font-size: 11.5px; margin-top: 4px; color: var(--muted-2); }
+.field-hint:empty { display: none; }
+.field-hint.bad { color: var(--bad); }
+.field-hint.good { color: var(--good); }
+.btn:disabled, .btn[disabled] { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+
 /* the results panel must never re-animate on every keystroke */
 #resultsPanel .card { animation: none; }
 
