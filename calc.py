@@ -153,6 +153,9 @@ def compute(inputs: dict[str, Any], settings: dict[str, Any] | None = None,
     lines = _build_lines(basic, hra, gpa, employee_pf, pt, esic_employee, income_tax,
                          employer_pf, gratuity, esic_employer, asset, vp_annual, months)
 
+    if not feasible and not inputs.get("_no_raise"):
+        return _raise_to_minimum(inputs, settings, min_wage, min_ctc_required, proposed_ctc)
+
     return {
         "label": inputs.get("label") or "",
         "previous_ctc": previous_ctc,
@@ -268,6 +271,33 @@ def _build_lines(basic, hra, gpa, employee_pf, pt, esic_employee, income_tax,
     return lines
 
 
+def _raise_to_minimum(inputs: dict, settings: dict | None, min_wage: float,
+                      min_ctc_required: float, requested_ctc: float) -> dict:
+    """Recalculate at the CTC the minimum wage requires.
+
+    Paying less than that is not legal, so the useful answer is the compliant
+    package: every figure then agrees — the card, the table and the export all
+    show the same CTC — while the caller can still see what was asked for.
+    """
+    target = float(min_ctc_required or 0)
+    result = compute({**inputs, "proposed_ctc": target, "_no_raise": True}, settings, min_wage)
+    for _ in range(8):
+        if result.get("feasible"):
+            break
+        target = _r(target * 1.01) + 1
+        result = compute({**inputs, "proposed_ctc": target, "_no_raise": True}, settings, min_wage)
+
+    result["requested_ctc"] = _r(requested_ctc)
+    result["raised_to_minimum"] = True
+    result["min_ctc_required"] = min_ctc_required
+    result["warnings"] = [
+        f"The minimum wage of {_r(min_wage):,.0f} cannot be paid on a CTC of "
+        f"{_r(requested_ctc):,.0f}. Raised it to {result['proposed_ctc']:,.0f} — the "
+        "lowest CTC that can carry it."
+    ] + [w for w in result.get("warnings", []) if "cannot be honoured" not in w]
+    return result
+
+
 def solve_ctc_for_take_home(inputs: dict, settings: dict | None, min_wage: float | None,
                             target_monthly: float) -> dict:
     """Reverse solve: the smallest *payable* annual CTC that reaches a monthly take-home.
@@ -280,13 +310,13 @@ def solve_ctc_for_take_home(inputs: dict, settings: dict | None, min_wage: float
     base.pop("proposed_ctc", None)
     target = float(target_monthly or 0)
 
-    probe = compute({**base, "proposed_ctc": 0}, settings, min_wage)
+    probe = compute({**base, "proposed_ctc": 0, "_no_raise": True}, settings, min_wage)
     floor_ctc = 0 if probe.get("feasible") else int(round(probe.get("min_ctc_required") or 0))
-    floor_result = compute({**base, "proposed_ctc": floor_ctc}, settings, min_wage)
+    floor_result = compute({**base, "proposed_ctc": floor_ctc, "_no_raise": True}, settings, min_wage)
     floor_take_home = floor_result.get("take_home") or 0
 
     def result_at(ctc):
-        return compute({**base, "proposed_ctc": ctc}, settings, min_wage)
+        return compute({**base, "proposed_ctc": ctc, "_no_raise": True}, settings, min_wage)
 
     def pays(ctc):
         result = result_at(ctc)

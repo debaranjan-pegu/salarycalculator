@@ -897,7 +897,9 @@ function patchResults(r) {
   };
 
   set("proposed_ctc", num(r.proposed_ctc));
-  set("ctc_monthly", num(r.ctc_monthly) + " / month");
+  set("ctc_monthly", r.raised_to_minimum
+    ? `raised from ${num(r.requested_ctc)} · ${num(r.ctc_monthly)} / month`
+    : num(r.ctc_monthly) + " / month");
   set("basic", num(r.basic));
   set("take_home", num(r.take_home));
   set("min_wage", r.min_wage > 0 ? num(r.min_wage) : "—");
@@ -936,13 +938,7 @@ function patchResults(r) {
     const glyph = kind === "bad" ? "⛔" : kind === "info" ? "ℹ️" : "⚠️";
     return `<div class="notice ${kind}"><span class="glyph">${glyph}</span><div>${esc(w)}</div></div>`;
   }).join("");
-  const fix = (r.min_ctc_required && !r.feasible)
-    ? `<div class="inline" style="margin:-2px 0 10px; flex-wrap:wrap">
-         <button class="btn sm primary" data-act="use-required-ctc">Set the CTC to ${num(r.min_ctc_required)}</button>
-         <span class="small muted">the lowest CTC that can legally carry this minimum wage</span>
-       </div>`
-    : "";
-  setHtml("notices", noticeHtml + fix);
+  setHtml("notices", noticeHtml);
 
   const er = r.employer_pf + r.gratuity + r.esic_employer + r.asset_allowance;
   const cells = {
@@ -1969,11 +1965,6 @@ async function onViewClick(e) {
     else if (act === "excel") exportExcel();
     else if (act === "solve") await solveTakeHome();
     else if (act === "clear-proposed") { S.draft.proposed_ctc = null; render(); }
-    else if (act === "use-required-ctc") {
-      S.draft.proposed_ctc = S.result ? S.result.min_ctc_required : null;
-      render();
-      toast("CTC raised to the minimum that can carry this wage.", "good");
-    }
     else if (act === "sample") { S.draft = sampleDraft(); S.result = null; S.editingBreakupId = null; render(); }
     else if (act === "clear") { S.draft = { ...DEFAULT_DRAFT, country_id: S.draft.country_id, category_id: S.draft.category_id }; S.result = null; S.editingBreakupId = null; render(); }
     else if (act === "save-settings") await saveSettings();
