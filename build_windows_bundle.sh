@@ -24,6 +24,13 @@ rm -rf "$OUT/$NAME"
 mkdir -p "$OUT/$NAME/python"
 unzip -q "$WORK/py.zip" -d "$OUT/$NAME/python"
 
+# The embedded interpreter takes sys.path solely from this file and, being
+# isolated, never prepends the script's own folder — so `python app.py` from the
+# bundle root could not import db, calc, report or xlsx. Add the bundle root
+# (`..` resolved against python/) to make those importable.
+PTH_FILE="$(ls "$OUT/$NAME/python"/*._pth)"
+printf '..\n' >> "$PTH_FILE"
+
 for f in app.py auth.py calc.py certgen.py db.py report.py xlsx.py VERSION LICENSE README.md; do
   cp "$f" "$OUT/$NAME/"
 done
