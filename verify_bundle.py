@@ -28,6 +28,8 @@ REQUIRED = (
     "static/styles.css",
     "Salary Calculator.cmd",
     "Share with team.cmd",
+    "Update.cmd",
+    "README-WINDOWS.txt",
 )
 
 
@@ -64,6 +66,14 @@ def main(argv: list[str]) -> int:
     for rel in REQUIRED:
         if not os.path.isfile(os.path.join(bundle, rel)):
             problems.append(f"{rel} is missing")
+
+    # cmd.exe wants CRLF; a lone LF makes Notepad show one enormous line and
+    # can trip up label parsing.
+    for entry in sorted(os.listdir(bundle)):
+        if entry.endswith(".cmd"):
+            with open(os.path.join(bundle, entry), "rb") as fh:
+                if b"\r\n" not in fh.read():
+                    problems.append(f"{entry} has no CRLF line endings")
 
     version = open(os.path.join(bundle, "VERSION"), encoding="utf-8").read().strip()
     print(f"bundle version: {version}")

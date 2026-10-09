@@ -61,6 +61,155 @@ echo The app has stopped.
 pause
 EOF
 
+cat > "$OUT/$NAME/Update.cmd" <<'EOF'
+@echo off
+REM Fetch the newest release and set it up beside this folder, keeping your data.
+setlocal
+title Update the Salary Calculator
+cd /d "%~dp0"
+set "HERE=%CD%"
+for %%I in ("%HERE%\..") do set "PARENT=%%~fI"
+set "REPO=debaranjan-pegu/salarycalculator"
+
+where curl >nul 2>nul || goto :notools
+where tar  >nul 2>nul || goto :notools
+
+for /f "usebackq delims=" %%v in ("%HERE%\VERSION") do set "CURRENT=%%v"
+if not defined CURRENT goto :damaged
+echo This copy is version %CURRENT%.
+echo Asking GitHub for the latest version...
+curl -fsSL -o "%TEMP%\salarycalc-version.txt" "https://raw.githubusercontent.com/%REPO%/main/VERSION"
+if errorlevel 1 goto :offline
+for /f "usebackq delims=" %%v in ("%TEMP%\salarycalc-version.txt") do set "LATEST=%%v"
+if not defined LATEST goto :offline
+echo The latest version is %LATEST%.
+if /i "%CURRENT%"=="%LATEST%" goto :current
+
+set "TARGET=%PARENT%\SalaryCalculator-Windows-%LATEST%"
+if exist "%TARGET%" (
+  echo.
+  echo Version %LATEST% is already unpacked at:
+  echo    %TARGET%
+  echo Close this app's window and open that folder instead.
+  echo.
+  pause
+  exit /b 0
+)
+
+set "ZIP=%TEMP%\SalaryCalculator-Windows-%LATEST%.zip"
+set "STAGE=%TEMP%\salarycalc-stage-%LATEST%"
+echo Downloading version %LATEST% ...
+curl -fsSL -o "%ZIP%" "https://github.com/%REPO%/releases/download/v%LATEST%/SalaryCalculator-Windows-x64.zip"
+if errorlevel 1 goto :nodownload
+
+echo Unpacking ...
+if exist "%STAGE%" rmdir /s /q "%STAGE%"
+mkdir "%STAGE%"
+tar -xf "%ZIP%" -C "%STAGE%"
+if errorlevel 1 goto :nountar
+if not exist "%STAGE%\SalaryCalculator-Windows\VERSION" goto :nountar
+
+echo Carrying your records across ...
+if exist "%HERE%\salary.db" (
+  copy /y "%HERE%\salary.db" "%STAGE%\SalaryCalculator-Windows\salary.db" >nul 2>&1
+  if not exist "%STAGE%\SalaryCalculator-Windows\salary.db" goto :nodata
+)
+if exist "%HERE%\certs" xcopy /e /i /y "%HERE%\certs" "%STAGE%\SalaryCalculator-Windows\certs" >nul 2>&1
+
+move "%STAGE%\SalaryCalculator-Windows" "%TARGET%" >nul
+if errorlevel 1 goto :nomove
+
+echo.
+echo Done. Version %LATEST% is ready at:
+echo    %TARGET%
+echo.
+echo Next: close this app's window, open that folder and double-click
+echo "Salary Calculator.cmd". Your records came across unchanged.
+echo The old folder can be deleted afterwards.
+echo.
+pause
+exit /b 0
+
+:current
+echo.
+echo You are already on the latest version. Nothing to do.
+echo.
+pause
+exit /b 0
+
+:nodata
+echo.
+echo Your salary.db could not be copied into the new version, so nothing was
+echo changed - this folder is still your live copy. Run Update.cmd again, or
+echo copy salary.db across by hand from:
+echo    %HERE%
+echo to:
+echo    %STAGE%\SalaryCalculator-Windows
+echo.
+pause
+exit /b 1
+
+:notools
+echo.
+echo This needs "curl" and "tar", which Windows 10 version 1803 and newer
+echo already include. Download the latest version by hand instead:
+echo    https://github.com/%REPO%/releases
+echo Unpack it and copy your salary.db into the new folder.
+echo.
+pause
+exit /b 1
+
+:damaged
+echo.
+echo This folder has no readable VERSION file, so it is not a complete copy.
+echo Download the latest version by hand:
+echo    https://github.com/%REPO%/releases
+echo.
+pause
+exit /b 1
+
+:offline
+echo.
+echo Could not reach GitHub. Check your internet connection and try again.
+echo.
+pause
+exit /b 1
+
+:nodownload
+echo.
+echo GitHub did not have version %LATEST% ready to download. Try again in a
+echo few minutes, or get it by hand from:
+echo    https://github.com/%REPO%/releases
+echo.
+pause
+exit /b 1
+
+:nountar
+echo.
+echo The download could not be unpacked - it may have been incomplete.
+echo Delete this file and run Update.cmd again:
+echo    %ZIP%
+echo.
+pause
+exit /b 1
+
+:nomove
+echo.
+echo The new version was unpacked to:
+echo    %STAGE%\SalaryCalculator-Windows
+echo but it could not be moved next to this folder. Close this app's window
+echo and run Update.cmd again.
+echo.
+pause
+exit /b 1
+EOF
+
+# Windows wants CRLF in a .cmd, and Notepad shows an LF-only file as one long
+# line. awk keeps this portable across the Mac and the CI runner.
+for f in "$OUT/$NAME"/*.cmd; do
+  awk 'BEGIN{ORS="\r\n"} { sub(/\r$/, ""); print }' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+done
+
 cat > "$OUT/$NAME/README-WINDOWS.txt" <<'EOF'
 Salary Calculator - portable Windows edition
 ============================================
@@ -86,7 +235,12 @@ FIRST RUN
   one-time recovery code - keep it somewhere safe.
 
 TO UPGRADE
-  Download the newer version of this folder and copy your salary.db into it.
+  Double-click  "Update.cmd"
+  It downloads the newest version into a folder beside this one and copies
+  your salary.db across. Then close this app's window and open the new folder.
+  Nothing to install, and no administrator rights are involved.
+  If that ever fails, do it by hand: download the newer version, unpack it,
+  and copy your salary.db into it.
 EOF
 
 echo "• zipping…"

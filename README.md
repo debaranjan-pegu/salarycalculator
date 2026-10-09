@@ -97,16 +97,21 @@ it is already running instead of starting a second copy.
 
 When a new version is released:
 
-- **macOS / Windows:** double-click `upgrade.command` / `upgrade.bat`.
-- **Linux:** `./upgrade.sh`
+- **macOS / Linux from a git clone:** double-click `upgrade.command` / run
+  `./upgrade.sh` — it pulls the latest code and restarts the app.
+- **Windows from a git clone:** double-click `upgrade.bat`. It needs Git
+  installed; close the app's window afterwards and start it again.
+- **Windows portable bundle:** double-click `Update.cmd` in its folder. It
+  fetches the newest bundle into a folder *beside* the current one, carries
+  `salary.db` and `certs\` across, and leaves you to close the old window and
+  open the new folder. No Git, no PowerShell, no administrator rights.
 
-That pulls the latest code from GitHub and restarts the app if it is running.
 **Your data is never touched** — everything lives in `salary.db`, which is not
-part of the code. (The portable Windows bundle cannot self-update; download the
-new bundle and copy your `salary.db` across.)
+part of the code. A ZIP download without `.git` cannot self-update: re-download
+it and copy your `salary.db` across, or use the portable bundle's `Update.cmd`.
 
 You can also check from inside the app: **avatar menu → ℹ️ About → 🔄 Check for
-updates**.
+updates**. It reports whether a newer version exists (it does not install one).
 
 ## First run
 
