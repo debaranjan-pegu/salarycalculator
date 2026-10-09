@@ -5,20 +5,27 @@ masters, user accounts and a formatted Excel export. It replaces a spreadsheet
 with a proper database and a live web UI.
 
 - **Nothing to install by hand** — if the machine has no Python 3, the setup
-  scripts install it for you.
+  scripts install it for you; the Windows portable bundle even ships its own.
 - **Runs on Windows, macOS and Linux.** No packages, no build step.
 - **Works without internet.** All your data stays in one `salary.db` file.
 - **Share with your team** over your local network, or use it on your own PC.
 
 ## Quick start
 
+**Windows, no Python and no internet — the portable bundle.** Download
+`SalaryCalculator-Windows-x64.zip` from the
+[Releases page](https://github.com/debaranjan-pegu/salarycalculator/releases),
+unzip it anywhere and double-click **`Salary Calculator.cmd`**. It carries its
+own copy of Python, so there is nothing to install at all.
+
+**Windows, ordinary route:** download the ZIP, unzip, double-click **`run.bat`**
+— if Python is missing it is downloaded and installed silently first.
+
 **macOS / Linux — one line:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/debaranjan-pegu/salarycalculator/main/bootstrap.sh | bash
 ```
-
-**Windows:** download the ZIP, unzip, double-click **`run.bat`**.
 
 Or clone it yourself:
 
@@ -30,8 +37,8 @@ cd salarycalculator
 
 Your browser opens at <http://127.0.0.1:8765/>. If Python 3 is missing, the
 script offers to install it (Homebrew or the Apple command-line tools on macOS;
-`apt` / `dnf` / `pacman` / `zypper` on Linux; the official installer from
-python.org on Windows) and tells you exactly what to do if it cannot.
+`apt` / `dnf` / `pacman` / `zypper` on Linux) and tells you exactly what to do if
+it cannot.
 
 ## The things you can run
 
@@ -95,11 +102,11 @@ When a new version is released:
 
 That pulls the latest code from GitHub and restarts the app if it is running.
 **Your data is never touched** — everything lives in `salary.db`, which is not
-part of the code.
+part of the code. (The portable Windows bundle cannot self-update; download the
+new bundle and copy your `salary.db` across.)
 
 You can also check from inside the app: **avatar menu → ℹ️ About → 🔄 Check for
-updates**. It compares your version with the published one and links to the
-project page.
+updates**.
 
 ## First run
 
@@ -112,7 +119,7 @@ it shows you.
 | **User** | calculator, records, masters, Excel export |
 
 **Lost the admin password?** Use *Forgot your password?* with the recovery code,
-or run `./setup.sh run` → then `python3 app.py --reset-admin` on the host.
+or run `python3 app.py --reset-admin` on the host machine.
 
 ## Features
 
@@ -134,8 +141,9 @@ or run `./setup.sh run` → then `python3 app.py --reset-admin` on the host.
 
 ## Requirements
 
-Python **3.9+**. If it is missing, the setup scripts install it for you.
-No packages, no build step, no database server.
+Python **3.9+** — installed automatically if missing, or use the Windows
+portable bundle which includes it. No packages, no build step, no database
+server.
 
 ## Security
 
@@ -164,6 +172,7 @@ setup.sh/.bat   the real setup logic (Python install, auto-start)
 run.* share.*   thin wrappers for each mode
 install.* uninstall.* upgrade.*   start-up and update helpers
 bootstrap.sh    one-line installer (macOS / Linux)
+build_windows_bundle.sh   builds dist/SalaryCalculator-Windows-x64.zip
 VERSION         the released version
 salary.db       created on first run — all your data (never committed)
 ```

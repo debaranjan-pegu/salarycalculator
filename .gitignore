@@ -5,6 +5,9 @@ salary.db-shm
 certs/
 *.log
 
+# Built Windows bundle (attach it to a Release instead — it is binary)
+dist/
+
 # Python
 __pycache__/
 *.pyc
