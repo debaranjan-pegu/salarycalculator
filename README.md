@@ -212,9 +212,24 @@ run.* share.*   thin wrappers for each mode
 install.* uninstall.* upgrade.*   start-up and update helpers
 bootstrap.sh    one-line installer (macOS / Linux)
 build_windows_bundle.sh   builds dist/SalaryCalculator-Windows-x64.zip
+verify_bundle.py   checks a built bundle before it is published
+.github/workflows/release.yml   builds + attaches that ZIP on every v* tag
 VERSION         the released version
 salary.db       created on first run — all your data (never committed)
 ```
+
+## Releasing
+
+Push a tag and the rest is automatic:
+
+```bash
+git tag -a v1.6.3 -m "Salary Calculator v1.6.3" && git push origin v1.6.3
+```
+
+The Release workflow then builds the portable Windows bundle, checks it with
+`verify_bundle.py`, and attaches the ZIP to the Release — which is what the
+**Quick start** download link points at. For a tag that predates the workflow,
+run **Actions → Release → Run workflow** and give the tag.
 
 ## Contributing
 

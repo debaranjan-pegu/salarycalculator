@@ -1,0 +1,61 @@
+name: Release
+
+# Builds the portable Windows bundle — the one that carries its own Python, so
+# it runs on a laptop where you have no administrator rights and nothing to
+# install — and attaches it to the Release for the tag.
+#
+# Push a v* tag and the download appears on the Releases page a minute later.
+# For a tag that predates this workflow, use "Run workflow" and give the tag.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build a release for, e.g. v1.6.2"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  windows-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Work out the tag
+        id: tag
+        env:
+          RAW_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: echo "name=v${RAW_TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the tagged code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.name }}
+
+      - name: Build the bundle
+        run: bash build_windows_bundle.sh
+
+      - name: Check the bundle before publishing it
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/bundle
+          unzip -q dist/SalaryCalculator-Windows-x64.zip -d /tmp/bundle
+          EXPECTED_VERSION="${TAG#v}" python3 verify_bundle.py /tmp/bundle/SalaryCalculator-Windows
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — replacing the asset."
+          else
+            gh release create "$TAG" --title "Salary Calculator $TAG" --generate-notes
+          fi
+          gh release upload "$TAG" dist/SalaryCalculator-Windows-x64.zip --clobber
