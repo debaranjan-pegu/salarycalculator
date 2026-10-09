@@ -257,6 +257,7 @@ def init_db(conn: sqlite3.Connection, seed_path: str = SEED_PATH) -> None:
                     """INSERT INTO grades (country_id, kind, name, up_to_ctc, insurance, sort_order)
                        VALUES (?,?,?,?,?,?)""",
                     (country_id["id"], kind, name, up_to, insurance, order))
+    merge_world_countries(conn)
     conn.execute("UPDATE breakups SET updated_at=created_at WHERE updated_at IS NULL")
     conn.commit()
 
@@ -707,9 +708,13 @@ def delete_breakup(conn: sqlite3.Connection, row_id: int) -> bool:
 # ---------------------------------------------------------------- reset & validation
 
 def _clear_masters(conn: sqlite3.Connection) -> None:
-    """Remove every master table. Users, sessions and metadata are preserved."""
+    """Remove the master data. Users, sessions, metadata and countries survive.
+
+    Countries are kept on purpose: the world list is a fixed catalogue, and that
+    way India keeps its own currency and locale through a reset.
+    """
     for table in ("breakups", "employees", "min_wages", "cities", "states",
-                  "categories", "settings", "companies", "grades", "countries"):
+                  "categories", "settings", "companies", "grades"):
         conn.execute(f"DELETE FROM {table}")
     conn.commit()
 
@@ -976,3 +981,26 @@ def grade_for(conn: sqlite3.Connection, country_id: int, ctc: float):
         """SELECT * FROM grades WHERE country_id=? AND kind='band' AND up_to_ctc >= ?
             ORDER BY up_to_ctc ASC, sort_order ASC LIMIT 1""", (country_id, value)).fetchone()
     return (dict(level) if level else None, dict(band) if band else None)
+
+
+def merge_world_countries(conn: sqlite3.Connection, path: str | None = None) -> int:
+    """Make sure every country in the world is in the master (idempotent).
+
+    Existing rows are never touched, so a country you have customised - India,
+    with its states, cities and wages - keeps its own currency and locale.
+    """
+    path = path or os.path.join(BASE_DIR, "seed", "countries_world.json")
+    if not os.path.exists(path):
+        return 0
+    with open(path, encoding="utf-8") as fh:
+        rows = json.load(fh)
+    added = 0
+    for c in rows:
+        cur = conn.execute(
+            """INSERT OR IGNORE INTO countries (code, name, currency_code, currency_symbol, locale)
+               VALUES (?,?,?,?,?)""",
+            (c["code"], c["name"], c.get("currency_code", ""),
+             c.get("currency_symbol", ""), c.get("locale", "")))
+        added += cur.rowcount or 0
+    conn.commit()
+    return added

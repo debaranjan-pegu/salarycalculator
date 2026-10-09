@@ -138,6 +138,10 @@ or run `python3 app.py --reset-admin` on the host machine.
 - **Masters** — Countries, Companies, States, Cities, Wage categories and
   Minimum wages, with search, pagination and **⬇️ Export / ⬆️ Import** for
   backup or pushing an updated wage list to other machines.
+- **Every country, ready to go** — the Countries master ships with **246
+  countries**, each carrying its own currency symbol, number formatting and
+  flag. Pick the United States and you get `$1,234,567`; India stays `₹12,34,567`.
+  The calculator, the masters and the Excel export all follow the country.
 - **Bulk minimum wages** — on the *Minimum wages* tab, **⬇️ Wage template**
   gives you a CSV listing every city (with today's figures pre-filled);
   fill the `amount` column and use **⬆️ Import wages**. You get a preview

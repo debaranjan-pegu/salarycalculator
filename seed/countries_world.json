@@ -1,0 +1,1724 @@
+[
+ {
+  "code": "AF",
+  "name": "Afghanistan",
+  "currency_code": "AFN",
+  "currency_symbol": "؋",
+  "locale": "prs-AF"
+ },
+ {
+  "code": "AL",
+  "name": "Albania",
+  "currency_code": "ALL",
+  "currency_symbol": "L",
+  "locale": "sqi-AL"
+ },
+ {
+  "code": "DZ",
+  "name": "Algeria",
+  "currency_code": "DZD",
+  "currency_symbol": "د.ج",
+  "locale": "ara-DZ"
+ },
+ {
+  "code": "AS",
+  "name": "American Samoa",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-AS"
+ },
+ {
+  "code": "AD",
+  "name": "Andorra",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "cat-AD"
+ },
+ {
+  "code": "AO",
+  "name": "Angola",
+  "currency_code": "AOA",
+  "currency_symbol": "Kz",
+  "locale": "por-AO"
+ },
+ {
+  "code": "AI",
+  "name": "Anguilla",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-AI"
+ },
+ {
+  "code": "AG",
+  "name": "Antigua and Barbuda",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-AG"
+ },
+ {
+  "code": "AR",
+  "name": "Argentina",
+  "currency_code": "ARS",
+  "currency_symbol": "$",
+  "locale": "grn-AR"
+ },
+ {
+  "code": "AM",
+  "name": "Armenia",
+  "currency_code": "AMD",
+  "currency_symbol": "֏",
+  "locale": "hye-AM"
+ },
+ {
+  "code": "AW",
+  "name": "Aruba",
+  "currency_code": "AWG",
+  "currency_symbol": "ƒ",
+  "locale": "nld-AW"
+ },
+ {
+  "code": "AU",
+  "name": "Australia",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-AU"
+ },
+ {
+  "code": "AT",
+  "name": "Austria",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "bar-AT"
+ },
+ {
+  "code": "AZ",
+  "name": "Azerbaijan",
+  "currency_code": "AZN",
+  "currency_symbol": "₼",
+  "locale": "aze-AZ"
+ },
+ {
+  "code": "BS",
+  "name": "Bahamas",
+  "currency_code": "BSD",
+  "currency_symbol": "$",
+  "locale": "eng-BS"
+ },
+ {
+  "code": "BH",
+  "name": "Bahrain",
+  "currency_code": "BHD",
+  "currency_symbol": ".د.ب",
+  "locale": "ara-BH"
+ },
+ {
+  "code": "BD",
+  "name": "Bangladesh",
+  "currency_code": "BDT",
+  "currency_symbol": "৳",
+  "locale": "ben-BD"
+ },
+ {
+  "code": "BB",
+  "name": "Barbados",
+  "currency_code": "BBD",
+  "currency_symbol": "$",
+  "locale": "eng-BB"
+ },
+ {
+  "code": "BY",
+  "name": "Belarus",
+  "currency_code": "BYN",
+  "currency_symbol": "Br",
+  "locale": "bel-BY"
+ },
+ {
+  "code": "BE",
+  "name": "Belgium",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "deu-BE"
+ },
+ {
+  "code": "BZ",
+  "name": "Belize",
+  "currency_code": "BZD",
+  "currency_symbol": "$",
+  "locale": "bjz-BZ"
+ },
+ {
+  "code": "BJ",
+  "name": "Benin",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-BJ"
+ },
+ {
+  "code": "BM",
+  "name": "Bermuda",
+  "currency_code": "BMD",
+  "currency_symbol": "$",
+  "locale": "eng-BM"
+ },
+ {
+  "code": "BT",
+  "name": "Bhutan",
+  "currency_code": "BTN",
+  "currency_symbol": "Nu.",
+  "locale": "dzo-BT"
+ },
+ {
+  "code": "BO",
+  "name": "Bolivia",
+  "currency_code": "BOB",
+  "currency_symbol": "Bs.",
+  "locale": "aym-BO"
+ },
+ {
+  "code": "BA",
+  "name": "Bosnia and Herzegovina",
+  "currency_code": "BAM",
+  "currency_symbol": "KM",
+  "locale": "bos-BA"
+ },
+ {
+  "code": "BW",
+  "name": "Botswana",
+  "currency_code": "BWP",
+  "currency_symbol": "P",
+  "locale": "eng-BW"
+ },
+ {
+  "code": "BR",
+  "name": "Brazil",
+  "currency_code": "BRL",
+  "currency_symbol": "R$",
+  "locale": "por-BR"
+ },
+ {
+  "code": "IO",
+  "name": "British Indian Ocean Territory",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-IO"
+ },
+ {
+  "code": "VG",
+  "name": "British Virgin Islands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-VG"
+ },
+ {
+  "code": "BN",
+  "name": "Brunei",
+  "currency_code": "BND",
+  "currency_symbol": "$",
+  "locale": "msa-BN"
+ },
+ {
+  "code": "BG",
+  "name": "Bulgaria",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "bul-BG"
+ },
+ {
+  "code": "BF",
+  "name": "Burkina Faso",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-BF"
+ },
+ {
+  "code": "BI",
+  "name": "Burundi",
+  "currency_code": "BIF",
+  "currency_symbol": "Fr",
+  "locale": "fra-BI"
+ },
+ {
+  "code": "KH",
+  "name": "Cambodia",
+  "currency_code": "KHR",
+  "currency_symbol": "៛",
+  "locale": "khm-KH"
+ },
+ {
+  "code": "CM",
+  "name": "Cameroon",
+  "currency_code": "XAF",
+  "currency_symbol": "Fr",
+  "locale": "eng-CM"
+ },
+ {
+  "code": "CA",
+  "name": "Canada",
+  "currency_code": "CAD",
+  "currency_symbol": "$",
+  "locale": "eng-CA"
+ },
+ {
+  "code": "CV",
+  "name": "Cape Verde",
+  "currency_code": "CVE",
+  "currency_symbol": "Esc",
+  "locale": "por-CV"
+ },
+ {
+  "code": "BQ",
+  "name": "Caribbean Netherlands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-BQ"
+ },
+ {
+  "code": "KY",
+  "name": "Cayman Islands",
+  "currency_code": "KYD",
+  "currency_symbol": "$",
+  "locale": "eng-KY"
+ },
+ {
+  "code": "CF",
+  "name": "Central African Republic",
+  "currency_code": "XAF",
+  "currency_symbol": "Fr",
+  "locale": "fra-CF"
+ },
+ {
+  "code": "TD",
+  "name": "Chad",
+  "currency_code": "XAF",
+  "currency_symbol": "Fr",
+  "locale": "ara-TD"
+ },
+ {
+  "code": "CL",
+  "name": "Chile",
+  "currency_code": "CLP",
+  "currency_symbol": "$",
+  "locale": "spa-CL"
+ },
+ {
+  "code": "CN",
+  "name": "China",
+  "currency_code": "CNY",
+  "currency_symbol": "¥",
+  "locale": "zho-CN"
+ },
+ {
+  "code": "CX",
+  "name": "Christmas Island",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-CX"
+ },
+ {
+  "code": "CC",
+  "name": "Cocos (Keeling) Islands",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-CC"
+ },
+ {
+  "code": "CO",
+  "name": "Colombia",
+  "currency_code": "COP",
+  "currency_symbol": "$",
+  "locale": "spa-CO"
+ },
+ {
+  "code": "KM",
+  "name": "Comoros",
+  "currency_code": "KMF",
+  "currency_symbol": "Fr",
+  "locale": "ara-KM"
+ },
+ {
+  "code": "CG",
+  "name": "Congo",
+  "currency_code": "XAF",
+  "currency_symbol": "Fr",
+  "locale": "fra-CG"
+ },
+ {
+  "code": "CK",
+  "name": "Cook Islands",
+  "currency_code": "CKD",
+  "currency_symbol": "$",
+  "locale": "eng-CK"
+ },
+ {
+  "code": "CR",
+  "name": "Costa Rica",
+  "currency_code": "CRC",
+  "currency_symbol": "₡",
+  "locale": "spa-CR"
+ },
+ {
+  "code": "HR",
+  "name": "Croatia",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "hrv-HR"
+ },
+ {
+  "code": "CU",
+  "name": "Cuba",
+  "currency_code": "CUC",
+  "currency_symbol": "$",
+  "locale": "spa-CU"
+ },
+ {
+  "code": "CW",
+  "name": "Curaçao",
+  "currency_code": "ANG",
+  "currency_symbol": "ƒ",
+  "locale": "eng-CW"
+ },
+ {
+  "code": "CY",
+  "name": "Cyprus",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "ell-CY"
+ },
+ {
+  "code": "CZ",
+  "name": "Czechia",
+  "currency_code": "CZK",
+  "currency_symbol": "Kč",
+  "locale": "ces-CZ"
+ },
+ {
+  "code": "CD",
+  "name": "DR Congo",
+  "currency_code": "CDF",
+  "currency_symbol": "FC",
+  "locale": "fra-CD"
+ },
+ {
+  "code": "DK",
+  "name": "Denmark",
+  "currency_code": "DKK",
+  "currency_symbol": "kr",
+  "locale": "dan-DK"
+ },
+ {
+  "code": "DJ",
+  "name": "Djibouti",
+  "currency_code": "DJF",
+  "currency_symbol": "Fr",
+  "locale": "ara-DJ"
+ },
+ {
+  "code": "DM",
+  "name": "Dominica",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-DM"
+ },
+ {
+  "code": "DO",
+  "name": "Dominican Republic",
+  "currency_code": "DOP",
+  "currency_symbol": "$",
+  "locale": "spa-DO"
+ },
+ {
+  "code": "EC",
+  "name": "Ecuador",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "spa-EC"
+ },
+ {
+  "code": "EG",
+  "name": "Egypt",
+  "currency_code": "EGP",
+  "currency_symbol": "£",
+  "locale": "ara-EG"
+ },
+ {
+  "code": "SV",
+  "name": "El Salvador",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "spa-SV"
+ },
+ {
+  "code": "GQ",
+  "name": "Equatorial Guinea",
+  "currency_code": "XAF",
+  "currency_symbol": "Fr",
+  "locale": "fra-GQ"
+ },
+ {
+  "code": "ER",
+  "name": "Eritrea",
+  "currency_code": "ERN",
+  "currency_symbol": "Nfk",
+  "locale": "ara-ER"
+ },
+ {
+  "code": "EE",
+  "name": "Estonia",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "est-EE"
+ },
+ {
+  "code": "SZ",
+  "name": "Eswatini",
+  "currency_code": "SZL",
+  "currency_symbol": "L",
+  "locale": "eng-SZ"
+ },
+ {
+  "code": "ET",
+  "name": "Ethiopia",
+  "currency_code": "ETB",
+  "currency_symbol": "Br",
+  "locale": "amh-ET"
+ },
+ {
+  "code": "FK",
+  "name": "Falkland Islands",
+  "currency_code": "FKP",
+  "currency_symbol": "£",
+  "locale": "eng-FK"
+ },
+ {
+  "code": "FO",
+  "name": "Faroe Islands",
+  "currency_code": "DKK",
+  "currency_symbol": "kr",
+  "locale": "dan-FO"
+ },
+ {
+  "code": "FJ",
+  "name": "Fiji",
+  "currency_code": "FJD",
+  "currency_symbol": "$",
+  "locale": "eng-FJ"
+ },
+ {
+  "code": "FI",
+  "name": "Finland",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fin-FI"
+ },
+ {
+  "code": "FR",
+  "name": "France",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-FR"
+ },
+ {
+  "code": "GF",
+  "name": "French Guiana",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-GF"
+ },
+ {
+  "code": "PF",
+  "name": "French Polynesia",
+  "currency_code": "XPF",
+  "currency_symbol": "₣",
+  "locale": "fra-PF"
+ },
+ {
+  "code": "TF",
+  "name": "French Southern and Antarctic Lands",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-TF"
+ },
+ {
+  "code": "GA",
+  "name": "Gabon",
+  "currency_code": "XAF",
+  "currency_symbol": "Fr",
+  "locale": "fra-GA"
+ },
+ {
+  "code": "GM",
+  "name": "Gambia",
+  "currency_code": "GMD",
+  "currency_symbol": "D",
+  "locale": "eng-GM"
+ },
+ {
+  "code": "GE",
+  "name": "Georgia",
+  "currency_code": "GEL",
+  "currency_symbol": "₾",
+  "locale": "kat-GE"
+ },
+ {
+  "code": "DE",
+  "name": "Germany",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "deu-DE"
+ },
+ {
+  "code": "GH",
+  "name": "Ghana",
+  "currency_code": "GHS",
+  "currency_symbol": "₵",
+  "locale": "eng-GH"
+ },
+ {
+  "code": "GI",
+  "name": "Gibraltar",
+  "currency_code": "GIP",
+  "currency_symbol": "£",
+  "locale": "eng-GI"
+ },
+ {
+  "code": "GR",
+  "name": "Greece",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "ell-GR"
+ },
+ {
+  "code": "GL",
+  "name": "Greenland",
+  "currency_code": "DKK",
+  "currency_symbol": "kr.",
+  "locale": "kal-GL"
+ },
+ {
+  "code": "GD",
+  "name": "Grenada",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-GD"
+ },
+ {
+  "code": "GP",
+  "name": "Guadeloupe",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-GP"
+ },
+ {
+  "code": "GU",
+  "name": "Guam",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "cha-GU"
+ },
+ {
+  "code": "GT",
+  "name": "Guatemala",
+  "currency_code": "GTQ",
+  "currency_symbol": "Q",
+  "locale": "spa-GT"
+ },
+ {
+  "code": "GG",
+  "name": "Guernsey",
+  "currency_code": "GBP",
+  "currency_symbol": "£",
+  "locale": "eng-GG"
+ },
+ {
+  "code": "GN",
+  "name": "Guinea",
+  "currency_code": "GNF",
+  "currency_symbol": "Fr",
+  "locale": "fra-GN"
+ },
+ {
+  "code": "GW",
+  "name": "Guinea-Bissau",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "por-GW"
+ },
+ {
+  "code": "GY",
+  "name": "Guyana",
+  "currency_code": "GYD",
+  "currency_symbol": "$",
+  "locale": "eng-GY"
+ },
+ {
+  "code": "HT",
+  "name": "Haiti",
+  "currency_code": "HTG",
+  "currency_symbol": "G",
+  "locale": "fra-HT"
+ },
+ {
+  "code": "HN",
+  "name": "Honduras",
+  "currency_code": "HNL",
+  "currency_symbol": "L",
+  "locale": "spa-HN"
+ },
+ {
+  "code": "HK",
+  "name": "Hong Kong",
+  "currency_code": "HKD",
+  "currency_symbol": "$",
+  "locale": "eng-HK"
+ },
+ {
+  "code": "HU",
+  "name": "Hungary",
+  "currency_code": "HUF",
+  "currency_symbol": "Ft",
+  "locale": "hun-HU"
+ },
+ {
+  "code": "IS",
+  "name": "Iceland",
+  "currency_code": "ISK",
+  "currency_symbol": "kr",
+  "locale": "isl-IS"
+ },
+ {
+  "code": "IN",
+  "name": "India",
+  "currency_code": "INR",
+  "currency_symbol": "₹",
+  "locale": "eng-IN"
+ },
+ {
+  "code": "ID",
+  "name": "Indonesia",
+  "currency_code": "IDR",
+  "currency_symbol": "Rp",
+  "locale": "ind-ID"
+ },
+ {
+  "code": "IR",
+  "name": "Iran",
+  "currency_code": "IRR",
+  "currency_symbol": "﷼",
+  "locale": "fas-IR"
+ },
+ {
+  "code": "IQ",
+  "name": "Iraq",
+  "currency_code": "IQD",
+  "currency_symbol": "ع.د",
+  "locale": "ara-IQ"
+ },
+ {
+  "code": "IE",
+  "name": "Ireland",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "eng-IE"
+ },
+ {
+  "code": "IM",
+  "name": "Isle of Man",
+  "currency_code": "GBP",
+  "currency_symbol": "£",
+  "locale": "eng-IM"
+ },
+ {
+  "code": "IL",
+  "name": "Israel",
+  "currency_code": "ILS",
+  "currency_symbol": "₪",
+  "locale": "ara-IL"
+ },
+ {
+  "code": "IT",
+  "name": "Italy",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "ita-IT"
+ },
+ {
+  "code": "CI",
+  "name": "Ivory Coast",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-CI"
+ },
+ {
+  "code": "JM",
+  "name": "Jamaica",
+  "currency_code": "JMD",
+  "currency_symbol": "$",
+  "locale": "eng-JM"
+ },
+ {
+  "code": "JP",
+  "name": "Japan",
+  "currency_code": "JPY",
+  "currency_symbol": "¥",
+  "locale": "jpn-JP"
+ },
+ {
+  "code": "JE",
+  "name": "Jersey",
+  "currency_code": "GBP",
+  "currency_symbol": "£",
+  "locale": "eng-JE"
+ },
+ {
+  "code": "JO",
+  "name": "Jordan",
+  "currency_code": "JOD",
+  "currency_symbol": "د.ا",
+  "locale": "ara-JO"
+ },
+ {
+  "code": "KZ",
+  "name": "Kazakhstan",
+  "currency_code": "KZT",
+  "currency_symbol": "₸",
+  "locale": "kaz-KZ"
+ },
+ {
+  "code": "KE",
+  "name": "Kenya",
+  "currency_code": "KES",
+  "currency_symbol": "Sh",
+  "locale": "eng-KE"
+ },
+ {
+  "code": "KI",
+  "name": "Kiribati",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-KI"
+ },
+ {
+  "code": "XK",
+  "name": "Kosovo",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "sqi-XK"
+ },
+ {
+  "code": "KW",
+  "name": "Kuwait",
+  "currency_code": "KWD",
+  "currency_symbol": "د.ك",
+  "locale": "ara-KW"
+ },
+ {
+  "code": "KG",
+  "name": "Kyrgyzstan",
+  "currency_code": "KGS",
+  "currency_symbol": "с",
+  "locale": "kir-KG"
+ },
+ {
+  "code": "LA",
+  "name": "Laos",
+  "currency_code": "LAK",
+  "currency_symbol": "₭",
+  "locale": "lao-LA"
+ },
+ {
+  "code": "LV",
+  "name": "Latvia",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "lav-LV"
+ },
+ {
+  "code": "LB",
+  "name": "Lebanon",
+  "currency_code": "LBP",
+  "currency_symbol": "ل.ل",
+  "locale": "ara-LB"
+ },
+ {
+  "code": "LS",
+  "name": "Lesotho",
+  "currency_code": "LSL",
+  "currency_symbol": "L",
+  "locale": "eng-LS"
+ },
+ {
+  "code": "LR",
+  "name": "Liberia",
+  "currency_code": "LRD",
+  "currency_symbol": "$",
+  "locale": "eng-LR"
+ },
+ {
+  "code": "LY",
+  "name": "Libya",
+  "currency_code": "LYD",
+  "currency_symbol": "ل.د",
+  "locale": "ara-LY"
+ },
+ {
+  "code": "LI",
+  "name": "Liechtenstein",
+  "currency_code": "CHF",
+  "currency_symbol": "Fr",
+  "locale": "deu-LI"
+ },
+ {
+  "code": "LT",
+  "name": "Lithuania",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "lit-LT"
+ },
+ {
+  "code": "LU",
+  "name": "Luxembourg",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "deu-LU"
+ },
+ {
+  "code": "MO",
+  "name": "Macau",
+  "currency_code": "MOP",
+  "currency_symbol": "P",
+  "locale": "por-MO"
+ },
+ {
+  "code": "MG",
+  "name": "Madagascar",
+  "currency_code": "MGA",
+  "currency_symbol": "Ar",
+  "locale": "fra-MG"
+ },
+ {
+  "code": "MW",
+  "name": "Malawi",
+  "currency_code": "MWK",
+  "currency_symbol": "MK",
+  "locale": "eng-MW"
+ },
+ {
+  "code": "MY",
+  "name": "Malaysia",
+  "currency_code": "MYR",
+  "currency_symbol": "RM",
+  "locale": "eng-MY"
+ },
+ {
+  "code": "MV",
+  "name": "Maldives",
+  "currency_code": "MVR",
+  "currency_symbol": ".ރ",
+  "locale": "div-MV"
+ },
+ {
+  "code": "ML",
+  "name": "Mali",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-ML"
+ },
+ {
+  "code": "MT",
+  "name": "Malta",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "eng-MT"
+ },
+ {
+  "code": "MH",
+  "name": "Marshall Islands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-MH"
+ },
+ {
+  "code": "MQ",
+  "name": "Martinique",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-MQ"
+ },
+ {
+  "code": "MR",
+  "name": "Mauritania",
+  "currency_code": "MRU",
+  "currency_symbol": "UM",
+  "locale": "ara-MR"
+ },
+ {
+  "code": "MU",
+  "name": "Mauritius",
+  "currency_code": "MUR",
+  "currency_symbol": "₨",
+  "locale": "eng-MU"
+ },
+ {
+  "code": "YT",
+  "name": "Mayotte",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-YT"
+ },
+ {
+  "code": "MX",
+  "name": "Mexico",
+  "currency_code": "MXN",
+  "currency_symbol": "$",
+  "locale": "spa-MX"
+ },
+ {
+  "code": "MD",
+  "name": "Moldova",
+  "currency_code": "MDL",
+  "currency_symbol": "L",
+  "locale": "ron-MD"
+ },
+ {
+  "code": "MC",
+  "name": "Monaco",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-MC"
+ },
+ {
+  "code": "MN",
+  "name": "Mongolia",
+  "currency_code": "MNT",
+  "currency_symbol": "₮",
+  "locale": "mon-MN"
+ },
+ {
+  "code": "ME",
+  "name": "Montenegro",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "cnr-ME"
+ },
+ {
+  "code": "MS",
+  "name": "Montserrat",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-MS"
+ },
+ {
+  "code": "MA",
+  "name": "Morocco",
+  "currency_code": "MAD",
+  "currency_symbol": "د.م.",
+  "locale": "ara-MA"
+ },
+ {
+  "code": "MZ",
+  "name": "Mozambique",
+  "currency_code": "MZN",
+  "currency_symbol": "MT",
+  "locale": "por-MZ"
+ },
+ {
+  "code": "MM",
+  "name": "Myanmar",
+  "currency_code": "MMK",
+  "currency_symbol": "Ks",
+  "locale": "mya-MM"
+ },
+ {
+  "code": "NA",
+  "name": "Namibia",
+  "currency_code": "NAD",
+  "currency_symbol": "$",
+  "locale": "afr-NA"
+ },
+ {
+  "code": "NR",
+  "name": "Nauru",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-NR"
+ },
+ {
+  "code": "NP",
+  "name": "Nepal",
+  "currency_code": "NPR",
+  "currency_symbol": "₨",
+  "locale": "nep-NP"
+ },
+ {
+  "code": "NL",
+  "name": "Netherlands",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "nld-NL"
+ },
+ {
+  "code": "NC",
+  "name": "New Caledonia",
+  "currency_code": "XPF",
+  "currency_symbol": "₣",
+  "locale": "fra-NC"
+ },
+ {
+  "code": "NZ",
+  "name": "New Zealand",
+  "currency_code": "NZD",
+  "currency_symbol": "$",
+  "locale": "eng-NZ"
+ },
+ {
+  "code": "NI",
+  "name": "Nicaragua",
+  "currency_code": "NIO",
+  "currency_symbol": "C$",
+  "locale": "spa-NI"
+ },
+ {
+  "code": "NE",
+  "name": "Niger",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-NE"
+ },
+ {
+  "code": "NG",
+  "name": "Nigeria",
+  "currency_code": "NGN",
+  "currency_symbol": "₦",
+  "locale": "eng-NG"
+ },
+ {
+  "code": "NU",
+  "name": "Niue",
+  "currency_code": "NZD",
+  "currency_symbol": "$",
+  "locale": "eng-NU"
+ },
+ {
+  "code": "NF",
+  "name": "Norfolk Island",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-NF"
+ },
+ {
+  "code": "KP",
+  "name": "North Korea",
+  "currency_code": "KPW",
+  "currency_symbol": "₩",
+  "locale": "kor-KP"
+ },
+ {
+  "code": "MK",
+  "name": "North Macedonia",
+  "currency_code": "MKD",
+  "currency_symbol": "den",
+  "locale": "mkd-MK"
+ },
+ {
+  "code": "MP",
+  "name": "Northern Mariana Islands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "cal-MP"
+ },
+ {
+  "code": "NO",
+  "name": "Norway",
+  "currency_code": "NOK",
+  "currency_symbol": "kr",
+  "locale": "nno-NO"
+ },
+ {
+  "code": "OM",
+  "name": "Oman",
+  "currency_code": "OMR",
+  "currency_symbol": "ر.ع.",
+  "locale": "ara-OM"
+ },
+ {
+  "code": "PK",
+  "name": "Pakistan",
+  "currency_code": "PKR",
+  "currency_symbol": "₨",
+  "locale": "eng-PK"
+ },
+ {
+  "code": "PW",
+  "name": "Palau",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-PW"
+ },
+ {
+  "code": "PS",
+  "name": "Palestine",
+  "currency_code": "EGP",
+  "currency_symbol": "E£",
+  "locale": "ara-PS"
+ },
+ {
+  "code": "PA",
+  "name": "Panama",
+  "currency_code": "PAB",
+  "currency_symbol": "B/.",
+  "locale": "spa-PA"
+ },
+ {
+  "code": "PG",
+  "name": "Papua New Guinea",
+  "currency_code": "PGK",
+  "currency_symbol": "K",
+  "locale": "eng-PG"
+ },
+ {
+  "code": "PY",
+  "name": "Paraguay",
+  "currency_code": "PYG",
+  "currency_symbol": "₲",
+  "locale": "grn-PY"
+ },
+ {
+  "code": "PE",
+  "name": "Peru",
+  "currency_code": "PEN",
+  "currency_symbol": "S/.",
+  "locale": "aym-PE"
+ },
+ {
+  "code": "PH",
+  "name": "Philippines",
+  "currency_code": "PHP",
+  "currency_symbol": "₱",
+  "locale": "eng-PH"
+ },
+ {
+  "code": "PN",
+  "name": "Pitcairn Islands",
+  "currency_code": "NZD",
+  "currency_symbol": "$",
+  "locale": "eng-PN"
+ },
+ {
+  "code": "PL",
+  "name": "Poland",
+  "currency_code": "PLN",
+  "currency_symbol": "zł",
+  "locale": "pol-PL"
+ },
+ {
+  "code": "PT",
+  "name": "Portugal",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "por-PT"
+ },
+ {
+  "code": "PR",
+  "name": "Puerto Rico",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-PR"
+ },
+ {
+  "code": "QA",
+  "name": "Qatar",
+  "currency_code": "QAR",
+  "currency_symbol": "ر.ق",
+  "locale": "ara-QA"
+ },
+ {
+  "code": "RO",
+  "name": "Romania",
+  "currency_code": "RON",
+  "currency_symbol": "lei",
+  "locale": "ron-RO"
+ },
+ {
+  "code": "RU",
+  "name": "Russia",
+  "currency_code": "RUB",
+  "currency_symbol": "₽",
+  "locale": "rus-RU"
+ },
+ {
+  "code": "RW",
+  "name": "Rwanda",
+  "currency_code": "RWF",
+  "currency_symbol": "Fr",
+  "locale": "eng-RW"
+ },
+ {
+  "code": "RE",
+  "name": "Réunion",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-RE"
+ },
+ {
+  "code": "BL",
+  "name": "Saint Barthélemy",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-BL"
+ },
+ {
+  "code": "SH",
+  "name": "Saint Helena, Ascension and Tristan da Cunha",
+  "currency_code": "GBP",
+  "currency_symbol": "£",
+  "locale": "eng-SH"
+ },
+ {
+  "code": "KN",
+  "name": "Saint Kitts and Nevis",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-KN"
+ },
+ {
+  "code": "LC",
+  "name": "Saint Lucia",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-LC"
+ },
+ {
+  "code": "MF",
+  "name": "Saint Martin",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-MF"
+ },
+ {
+  "code": "PM",
+  "name": "Saint Pierre and Miquelon",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "fra-PM"
+ },
+ {
+  "code": "VC",
+  "name": "Saint Vincent and the Grenadines",
+  "currency_code": "XCD",
+  "currency_symbol": "$",
+  "locale": "eng-VC"
+ },
+ {
+  "code": "WS",
+  "name": "Samoa",
+  "currency_code": "WST",
+  "currency_symbol": "T",
+  "locale": "eng-WS"
+ },
+ {
+  "code": "SM",
+  "name": "San Marino",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "ita-SM"
+ },
+ {
+  "code": "SA",
+  "name": "Saudi Arabia",
+  "currency_code": "SAR",
+  "currency_symbol": "ر.س",
+  "locale": "ara-SA"
+ },
+ {
+  "code": "SN",
+  "name": "Senegal",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-SN"
+ },
+ {
+  "code": "RS",
+  "name": "Serbia",
+  "currency_code": "RSD",
+  "currency_symbol": "дин.",
+  "locale": "srp-RS"
+ },
+ {
+  "code": "SC",
+  "name": "Seychelles",
+  "currency_code": "SCR",
+  "currency_symbol": "₨",
+  "locale": "crs-SC"
+ },
+ {
+  "code": "SL",
+  "name": "Sierra Leone",
+  "currency_code": "SLE",
+  "currency_symbol": "Le",
+  "locale": "eng-SL"
+ },
+ {
+  "code": "SG",
+  "name": "Singapore",
+  "currency_code": "SGD",
+  "currency_symbol": "$",
+  "locale": "eng-SG"
+ },
+ {
+  "code": "SX",
+  "name": "Sint Maarten",
+  "currency_code": "ANG",
+  "currency_symbol": "ƒ",
+  "locale": "eng-SX"
+ },
+ {
+  "code": "SK",
+  "name": "Slovakia",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "slk-SK"
+ },
+ {
+  "code": "SI",
+  "name": "Slovenia",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "slv-SI"
+ },
+ {
+  "code": "SB",
+  "name": "Solomon Islands",
+  "currency_code": "SBD",
+  "currency_symbol": "$",
+  "locale": "eng-SB"
+ },
+ {
+  "code": "SO",
+  "name": "Somalia",
+  "currency_code": "SOS",
+  "currency_symbol": "Sh",
+  "locale": "ara-SO"
+ },
+ {
+  "code": "ZA",
+  "name": "South Africa",
+  "currency_code": "ZAR",
+  "currency_symbol": "R",
+  "locale": "afr-ZA"
+ },
+ {
+  "code": "GS",
+  "name": "South Georgia",
+  "currency_code": "SHP",
+  "currency_symbol": "£",
+  "locale": "eng-GS"
+ },
+ {
+  "code": "KR",
+  "name": "South Korea",
+  "currency_code": "KRW",
+  "currency_symbol": "₩",
+  "locale": "kor-KR"
+ },
+ {
+  "code": "SS",
+  "name": "South Sudan",
+  "currency_code": "SSP",
+  "currency_symbol": "£",
+  "locale": "eng-SS"
+ },
+ {
+  "code": "ES",
+  "name": "Spain",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "spa-ES"
+ },
+ {
+  "code": "LK",
+  "name": "Sri Lanka",
+  "currency_code": "LKR",
+  "currency_symbol": "Rs රු",
+  "locale": "sin-LK"
+ },
+ {
+  "code": "SD",
+  "name": "Sudan",
+  "currency_code": "SDG",
+  "currency_symbol": "PT",
+  "locale": "ara-SD"
+ },
+ {
+  "code": "SR",
+  "name": "Suriname",
+  "currency_code": "SRD",
+  "currency_symbol": "$",
+  "locale": "nld-SR"
+ },
+ {
+  "code": "SJ",
+  "name": "Svalbard and Jan Mayen",
+  "currency_code": "NOK",
+  "currency_symbol": "kr",
+  "locale": "nor-SJ"
+ },
+ {
+  "code": "SE",
+  "name": "Sweden",
+  "currency_code": "SEK",
+  "currency_symbol": "kr",
+  "locale": "swe-SE"
+ },
+ {
+  "code": "CH",
+  "name": "Switzerland",
+  "currency_code": "CHF",
+  "currency_symbol": "Fr.",
+  "locale": "fra-CH"
+ },
+ {
+  "code": "SY",
+  "name": "Syria",
+  "currency_code": "SYP",
+  "currency_symbol": "£",
+  "locale": "ara-SY"
+ },
+ {
+  "code": "ST",
+  "name": "São Tomé and Príncipe",
+  "currency_code": "STN",
+  "currency_symbol": "Db",
+  "locale": "por-ST"
+ },
+ {
+  "code": "TW",
+  "name": "Taiwan",
+  "currency_code": "TWD",
+  "currency_symbol": "$",
+  "locale": "zho-TW"
+ },
+ {
+  "code": "TJ",
+  "name": "Tajikistan",
+  "currency_code": "TJS",
+  "currency_symbol": "ЅМ",
+  "locale": "rus-TJ"
+ },
+ {
+  "code": "TZ",
+  "name": "Tanzania",
+  "currency_code": "TZS",
+  "currency_symbol": "Sh",
+  "locale": "eng-TZ"
+ },
+ {
+  "code": "TH",
+  "name": "Thailand",
+  "currency_code": "THB",
+  "currency_symbol": "฿",
+  "locale": "tha-TH"
+ },
+ {
+  "code": "TL",
+  "name": "Timor-Leste",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "por-TL"
+ },
+ {
+  "code": "TG",
+  "name": "Togo",
+  "currency_code": "XOF",
+  "currency_symbol": "Fr",
+  "locale": "fra-TG"
+ },
+ {
+  "code": "TK",
+  "name": "Tokelau",
+  "currency_code": "NZD",
+  "currency_symbol": "$",
+  "locale": "eng-TK"
+ },
+ {
+  "code": "TO",
+  "name": "Tonga",
+  "currency_code": "TOP",
+  "currency_symbol": "T$",
+  "locale": "eng-TO"
+ },
+ {
+  "code": "TT",
+  "name": "Trinidad and Tobago",
+  "currency_code": "TTD",
+  "currency_symbol": "$",
+  "locale": "eng-TT"
+ },
+ {
+  "code": "TN",
+  "name": "Tunisia",
+  "currency_code": "TND",
+  "currency_symbol": "د.ت",
+  "locale": "ara-TN"
+ },
+ {
+  "code": "TM",
+  "name": "Turkmenistan",
+  "currency_code": "TMT",
+  "currency_symbol": "m",
+  "locale": "rus-TM"
+ },
+ {
+  "code": "TC",
+  "name": "Turks and Caicos Islands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-TC"
+ },
+ {
+  "code": "TV",
+  "name": "Tuvalu",
+  "currency_code": "AUD",
+  "currency_symbol": "$",
+  "locale": "eng-TV"
+ },
+ {
+  "code": "TR",
+  "name": "Türkiye",
+  "currency_code": "TRY",
+  "currency_symbol": "₺",
+  "locale": "tur-TR"
+ },
+ {
+  "code": "UG",
+  "name": "Uganda",
+  "currency_code": "UGX",
+  "currency_symbol": "Sh",
+  "locale": "eng-UG"
+ },
+ {
+  "code": "UA",
+  "name": "Ukraine",
+  "currency_code": "UAH",
+  "currency_symbol": "₴",
+  "locale": "ukr-UA"
+ },
+ {
+  "code": "AE",
+  "name": "United Arab Emirates",
+  "currency_code": "AED",
+  "currency_symbol": "د.إ",
+  "locale": "ara-AE"
+ },
+ {
+  "code": "GB",
+  "name": "United Kingdom",
+  "currency_code": "GBP",
+  "currency_symbol": "£",
+  "locale": "eng-GB"
+ },
+ {
+  "code": "US",
+  "name": "United States",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-US"
+ },
+ {
+  "code": "UM",
+  "name": "United States Minor Outlying Islands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-UM"
+ },
+ {
+  "code": "VI",
+  "name": "United States Virgin Islands",
+  "currency_code": "USD",
+  "currency_symbol": "$",
+  "locale": "eng-VI"
+ },
+ {
+  "code": "UY",
+  "name": "Uruguay",
+  "currency_code": "UYU",
+  "currency_symbol": "$",
+  "locale": "spa-UY"
+ },
+ {
+  "code": "UZ",
+  "name": "Uzbekistan",
+  "currency_code": "UZS",
+  "currency_symbol": "so'm",
+  "locale": "rus-UZ"
+ },
+ {
+  "code": "VU",
+  "name": "Vanuatu",
+  "currency_code": "VUV",
+  "currency_symbol": "Vt",
+  "locale": "bis-VU"
+ },
+ {
+  "code": "VA",
+  "name": "Vatican City",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "ita-VA"
+ },
+ {
+  "code": "VE",
+  "name": "Venezuela",
+  "currency_code": "VES",
+  "currency_symbol": "Bs.S.",
+  "locale": "spa-VE"
+ },
+ {
+  "code": "VN",
+  "name": "Vietnam",
+  "currency_code": "VND",
+  "currency_symbol": "₫",
+  "locale": "vie-VN"
+ },
+ {
+  "code": "WF",
+  "name": "Wallis and Futuna",
+  "currency_code": "XPF",
+  "currency_symbol": "₣",
+  "locale": "fra-WF"
+ },
+ {
+  "code": "EH",
+  "name": "Western Sahara",
+  "currency_code": "DZD",
+  "currency_symbol": "دج",
+  "locale": "ber-EH"
+ },
+ {
+  "code": "YE",
+  "name": "Yemen",
+  "currency_code": "YER",
+  "currency_symbol": "﷼",
+  "locale": "ara-YE"
+ },
+ {
+  "code": "ZM",
+  "name": "Zambia",
+  "currency_code": "ZMW",
+  "currency_symbol": "ZK",
+  "locale": "eng-ZM"
+ },
+ {
+  "code": "ZW",
+  "name": "Zimbabwe",
+  "currency_code": "BWP",
+  "currency_symbol": "P",
+  "locale": "bwg-ZW"
+ },
+ {
+  "code": "AX",
+  "name": "Åland Islands",
+  "currency_code": "EUR",
+  "currency_symbol": "€",
+  "locale": "swe-AX"
+ }
+]

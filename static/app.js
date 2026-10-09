@@ -13,14 +13,45 @@ function esc(v) {
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
   ));
 }
-function sym() { return (S.result && S.result.currency_symbol) || "₹"; }
-function fmtNum(n, decimals = 0) {
-  return Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+/** The country the calculator — and therefore the currency — is currently on. */
+function currentCountry() {
+  if (!S.draft) return S.masters.countries[0] || null;
+  return S.masters.countries.find((c) => c.id === S.draft.country_id) || S.masters.countries[0] || null;
 }
-function money(n, decimals = 0) { return sym() + fmtNum(n, decimals); }
-function money2(n) {
+
+/** ISO-3166 alpha-2 code -> its flag, so every country gets an icon for free. */
+function flagOf(country) {
+  const code = ((country && country.code) || "").trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(code)) return "";
+  return String.fromCodePoint(0x1F1E6 + code.charCodeAt(0) - 65)
+       + String.fromCodePoint(0x1F1E6 + code.charCodeAt(1) - 65);
+}
+
+/** Currency symbol for a country (defaults to the one being calculated). */
+function sym(countryId) {
+  const country = countryId != null
+    ? S.masters.countries.find((c) => c.id === countryId)
+    : currentCountry();
+  return (country && (country.currency_symbol || country.currency_code))
+      || (S.result && S.result.currency_symbol)
+      || "₹";
+}
+
+/** Number grouping follows the country too — ₹ uses lakhs, $ uses thousands. */
+function localeOf(countryId) {
+  const country = countryId != null
+    ? S.masters.countries.find((c) => c.id === countryId)
+    : currentCountry();
+  return (country && country.locale) || "en-IN";
+}
+function fmtNum(n, decimals = 0, countryId) {
+  return Number(n || 0).toLocaleString(localeOf(countryId),
+    { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function money(n, decimals = 0, countryId) { return sym(countryId) + fmtNum(n, decimals, countryId); }
+function money2(n, countryId) {
   const v = Number(n || 0);
-  return money(v, Math.abs(v - Math.round(v)) < 0.005 ? 0 : 2);
+  return money(v, Math.abs(v - Math.round(v)) < 0.005 ? 0 : 2, countryId);
 }
 function initials(name) {
   return (name || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
@@ -564,7 +595,10 @@ function renderUserChip() {
 /* ================================================================== CALCULATOR */
 function locationOptions(selected, list, placeholder) {
   return `<option value="">${esc(placeholder)}</option>` +
-    list.map((x) => `<option value="${x.id}" ${x.id === selected ? "selected" : ""}>${esc(x.name)}</option>`).join("");
+    list.map((x) => {
+      const flag = x.currency_code ? flagOf(x) : "";   // country rows carry a currency
+      return `<option value="${x.id}" ${x.id === selected ? "selected" : ""}>${flag ? flag + " " : ""}${esc(x.name)}</option>`;
+    }).join("");
 }
 
 function viewCalculator() {
@@ -850,7 +884,7 @@ function patchResults(r) {
   const p = $("#resultsPanel");
   if (!p) return;
   const symbol = r.currency_symbol || "₹";
-  const num = (x, dec) => symbol + fmtNum(x, dec || 0);
+  const num = (x, dec) => symbol + fmtNum(x, dec || 0, r.country_id);
   const comp = (x) => (Math.abs(Number(x || 0)) < 0.5 ? "–" : num(x, 0));
   const set = (key, text) => {
     const el = p.querySelector(`[data-v="${key}"]`);
@@ -1061,8 +1095,8 @@ function viewRecords() {
     return `<tr>
       <td>${esc(b.employee_name || "—")}<div class="small muted">${esc(b.label || "")}</div></td>
       <td>${esc(b.company_name || s.company || "—")}</td>
-      <td class="num">${money(s.proposed_ctc)}</td>
-      <td class="num">${money(s.take_home)}</td>
+      <td class="num">${money(s.proposed_ctc, 0, (b.inputs || {}).country_id)}</td>
+      <td class="num">${money(s.take_home, 0, (b.inputs || {}).country_id)}</td>
       <td>${badge}</td>
       <td class="small muted">${esc(b.created_by_name || "—")}<div class="small muted">${esc((b.created_at || "").replace("T", " "))}</div></td>
       <td class="right">
@@ -1151,7 +1185,7 @@ const MASTER_DEFS = {
   },
   countries: {
     label: "Countries", addLabel: "Add country",
-    cols: [["name", "Country"], ["code", "Code"], ["currency_code", "Currency"], ["currency_symbol", "Symbol"], ["locale", "Locale"]],
+    cols: [["flag", "Flag"], ["name", "Country"], ["code", "Code"], ["currency_code", "Currency"], ["currency_symbol", "Symbol"], ["locale", "Locale"]],
     fields: [
       { k: "code", label: "ISO code", type: "text" },
       { k: "name", label: "Country name", type: "text" },
@@ -1212,13 +1246,19 @@ function displayCell(tab, row, key) {
     const st = stateById(row.state_id) || (row.city_id ? stateById((cityById(row.city_id) || {}).state_id) : null);
     return st ? st.name : "—";
   }
-  if (key === "country") return (countryById(row.country_id) || {}).name || "—";
+  if (key === "country") {
+    const c = countryById(row.country_id);
+    if (!c) return "—";
+    const flag = flagOf(c);
+    return (flag ? flag + " " : "") + c.name;
+  }
+  if (key === "flag") return flagOf(row) || "—";
   if (key === "category") return (catById(row.category_id) || {}).name || "—";
   if (key === "is_active") return row.is_active ? "Yes" : "No";
-  if (key === "amount") return money(row.amount);
+  if (key === "amount") return money(row.amount, 0, row.country_id);
   if (key === "kind") return row.kind === "band" ? "Band" : "Level";
-  if (key === "up_to_ctc") return money(row.up_to_ctc);
-  if (key === "insurance") return row.insurance ? money(row.insurance) : "—";
+  if (key === "up_to_ctc") return money(row.up_to_ctc, 0, row.country_id);
+  if (key === "insurance") return row.insurance ? money(row.insurance, 0, row.country_id) : "—";
   return row[key] ?? "";
 }
 
