@@ -1,0 +1,10 @@
+# Keep shell scripts runnable regardless of the OS they were cloned from
+*.sh        text eol=lf
+*.command   text eol=lf
+*.bat       text eol=crlf
+*.py        text eol=lf
+*.js        text eol=lf
+*.css       text eol=lf
+*.html      text eol=lf
+*.md        text eol=lf
+*.json      text eol=lf
