@@ -379,7 +379,9 @@ select.native-hidden { display: none; }
 /* ============================================================ app shell v1.2 */
 
 /* compact header */
-.topbar { padding: 10px 22px; gap: 12px; }
+/* position + z-index matter: backdrop-filter creates a stacking context, so
+   without this the user menu would paint underneath the scrolling content. */
+.topbar { padding: 10px 22px; gap: 12px; position: relative; z-index: 40; }
 .topbar h2 { font-size: 17px; }
 .topbar .sub { font-size: 11.5px; margin-top: 1px; }
 .topbar .titles { min-width: 0; }

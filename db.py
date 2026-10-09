@@ -769,3 +769,131 @@ def validate_data(conn: sqlite3.Connection) -> dict:
         },
         "cities_without_min_wage": missing,
     }
+
+
+# ---------------------------------------------------------------- minimum wages
+
+def min_wage_template(conn: sqlite3.Connection) -> str:
+    """A ready-to-fill CSV: every city, with its current wage pre-filled."""
+    import csv
+    import io
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["state", "city", "category", "amount"])
+    rows = conn.execute(
+        """SELECT s.name AS state, c.name AS city,
+                  (SELECT cat.code FROM min_wages m
+                     LEFT JOIN categories cat ON cat.id = m.category_id
+                    WHERE m.city_id = c.id AND m.amount > 0 ORDER BY m.id LIMIT 1) AS category,
+                  (SELECT m.amount FROM min_wages m
+                    WHERE m.city_id = c.id AND m.amount > 0 ORDER BY m.id LIMIT 1) AS amount
+             FROM cities c JOIN states s ON s.id = c.state_id
+            ORDER BY s.name, c.name""")
+    for row in rows:
+        writer.writerow([row["state"], row["city"],
+                         row["category"] or "",
+                         ("" if row["amount"] is None else f"{row['amount']:g}")])
+    return buffer.getvalue()
+
+
+def min_wage_import(conn: sqlite3.Connection, text: str, apply_changes: bool = False) -> dict:
+    """Validate a minimum-wage CSV, and optionally apply it.
+
+    Columns: ``state, city, amount`` and optional ``category``.
+    Nothing is written unless ``apply_changes`` is true, so the UI can preview
+    first. Amounts are never invented — only what the file says.
+    """
+    import csv
+    import io
+
+    report: dict = {"total": 0, "valid": 0, "unchanged": 0, "updated": 0, "created": 0,
+                    "errors": [], "changes": [], "applied": False}
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames:
+        report["errors"].append({"row": 0, "message": "The file is empty."})
+        return report
+    cols = {f.strip().lower(): f for f in reader.fieldnames if f}
+    for required in ("state", "city", "amount"):
+        if required not in cols:
+            report["errors"].append({"row": 0, "message":
+                                     f"Missing column “{required}”. The file needs state, city, amount "
+                                     "(and optionally category)."})
+            return report
+
+    first_category = conn.execute(
+        "SELECT id FROM categories ORDER BY sort_order, id LIMIT 1").fetchone()
+
+    for line, raw in enumerate(reader, start=2):
+        state_name = (raw.get(cols["state"]) or "").strip()
+        city_name = (raw.get(cols["city"]) or "").strip()
+        amount_raw = (raw.get(cols["amount"]) or "").strip()
+        cat_raw = (raw.get(cols["category"]) or "").strip() if "category" in cols else ""
+        if not state_name and not city_name and not amount_raw:
+            continue                                    # blank line
+        report["total"] += 1
+        if not (state_name and city_name and amount_raw):
+            report["errors"].append({"row": line, "message": "state, city and amount are all required."})
+            continue
+        try:
+            amount = float(amount_raw.replace(",", "").replace("₹", "").replace(" ", ""))
+        except ValueError:
+            report["errors"].append({"row": line, "message": f"“{amount_raw}” is not a number."})
+            continue
+        if amount <= 0:
+            report["errors"].append({"row": line, "message": "amount must be greater than zero."})
+            continue
+
+        state = conn.execute("SELECT id, country_id FROM states WHERE lower(name)=lower(?)",
+                             (state_name,)).fetchone()
+        if not state:
+            report["errors"].append({"row": line, "message": f"Unknown state “{state_name}”."})
+            continue
+        city = conn.execute("SELECT id FROM cities WHERE state_id=? AND lower(name)=lower(?)",
+                            (state["id"], city_name)).fetchone()
+        if not city:
+            report["errors"].append({"row": line,
+                                     "message": f"Unknown city “{city_name}” in {state_name}."})
+            continue
+
+        if cat_raw:
+            category = conn.execute(
+                "SELECT id FROM categories WHERE lower(code)=lower(?) OR lower(name)=lower(?)",
+                (cat_raw, cat_raw)).fetchone()
+            if not category:
+                report["errors"].append({"row": line, "message": f"Unknown category “{cat_raw}”."})
+                continue
+            category_id = category["id"]
+        else:
+            existing = conn.execute(
+                "SELECT category_id FROM min_wages WHERE city_id=? AND amount>0 ORDER BY id LIMIT 1",
+                (city["id"],)).fetchone()
+            category_id = (existing["category_id"] if existing and existing["category_id"]
+                           else (first_category["id"] if first_category else None))
+
+        current = conn.execute(
+            """SELECT id, amount FROM min_wages
+                WHERE country_id=? AND city_id=? AND IFNULL(category_id,0)=IFNULL(?,0)
+                ORDER BY id LIMIT 1""",
+            (state["country_id"], city["id"], category_id)).fetchone()
+
+        report["valid"] += 1
+        if current and abs(float(current["amount"]) - amount) < 0.005:
+            report["unchanged"] += 1
+            continue
+        report["changes"].append({"row": line, "state": state_name, "city": city_name,
+                                  "old": (current["amount"] if current else None), "new": amount})
+        if apply_changes:
+            if current:
+                conn.execute("UPDATE min_wages SET amount=? WHERE id=?", (amount, current["id"]))
+                report["updated"] += 1
+            else:
+                conn.execute("""INSERT INTO min_wages (country_id, state_id, city_id, category_id, amount)
+                                VALUES (?,?,?,?,?)""",
+                             (state["country_id"], state["id"], city["id"], category_id, amount))
+                report["created"] += 1
+
+    if apply_changes:
+        conn.commit()
+        report["applied"] = True
+    return report

@@ -970,6 +970,7 @@ function viewMasters() {
         <input class="search" type="text" id="masterSearch" placeholder="Search ${esc(def.label.toLowerCase())}…" value="${esc(S.search)}" />
         <div class="grow"></div>
         <span class="badge ghost">${rows.length} shown</span>
+        ${S.masterTab === "min_wages" ? '<button class="btn sm" data-act="wage-template" title="Download a CSV of every city to fill in">⬇️ Wage template</button>' + (S.isAdmin ? '<button class="btn sm" data-act="wage-import" title="Load minimum wages from a CSV file">⬆️ Import wages</button>' : "") : ""}
         <button class="btn sm" data-act="health">🩺 Data health</button>
         ${S.isAdmin ? '<button class="btn sm" data-act="masters-export" title="Download the master data as a file">⬇️ Export</button><button class="btn sm" data-act="masters-import" title="Replace the master data from a file">⬆️ Import</button>' : ""}
         <button class="btn primary sm" data-add="1">＋ ${esc(def.addLabel)}</button>
@@ -1105,6 +1106,70 @@ function importMasters() {
     } catch (err) { toast("Import failed: " + err.message, "bad"); }
   });
   input.click();
+}
+
+function downloadWageTemplate() {
+  const a = document.createElement("a");
+  a.href = "/api/min-wages/template";
+  a.click();
+  toast("Wage template downloading…", "good");
+}
+
+function importWages() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".csv,text/csv";
+  input.addEventListener("change", async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      showWageReport(await api("POST", "/api/min-wages/import", { csv: text }), text, file.name);
+    } catch (err) { toast("Could not read that file: " + err.message, "bad"); }
+  });
+  input.click();
+}
+
+function showWageReport(report, text, filename) {
+  const errors = report.errors || [];
+  const changes = report.changes || [];
+  const errorBlocks = errors.slice(0, 100).map((e) =>
+    `<div class="notice bad"><span class="glyph">⛔</span><div>Line ${e.row}: ${esc(e.message)}</div></div>`).join("");
+  const changeRows = changes.slice(0, 250).map((c) =>
+    `<tr><td>${esc(c.city)}</td><td class="small muted">${esc(c.state)}</td>
+      <td class="num">${c.old == null ? "—" : money(c.old)}</td>
+      <td class="num"><b>${money(c.new)}</b></td></tr>`).join("");
+  const canApply = changes.length > 0;
+
+  modal({
+    title: "Wage import preview",
+    sub: `${filename} — nothing has been changed yet.`,
+    readOnly: !canApply,
+    saveLabel: canApply ? `Apply ${changes.length} change${changes.length === 1 ? "" : "s"}` : "Close",
+    body: `
+      <div class="health-grid">
+        <div class="kpi"><div class="k-label">Rows read</div><div class="k-value">${fmtNum(report.total)}</div></div>
+        <div class="kpi"><div class="k-label">Valid</div><div class="k-value">${fmtNum(report.valid)}</div></div>
+        <div class="kpi"><div class="k-label">To change</div><div class="k-value">${fmtNum(changes.length)}</div></div>
+        <div class="kpi ${errors.length ? "bad" : "good"}"><div class="k-label">Problems</div><div class="k-value">${fmtNum(errors.length)}</div></div>
+      </div>
+      ${errorBlocks ? `<div style="margin-top:14px">${errorBlocks}</div>` : ""}
+      ${changes.length
+        ? `<div class="card-head" style="margin-top:18px"><h3>Proposed changes</h3><div class="grow"></div>
+             <span class="tag">${fmtNum(report.unchanged)} already match</span></div>
+           <div class="table-wrap" style="max-height:300px"><table>
+             <thead><tr><th>City</th><th>State</th><th class="num">Current</th><th class="num">New</th></tr></thead>
+             <tbody>${changeRows}</tbody></table></div>
+           ${changes.length > 250 ? `<p class="small muted" style="margin-top:8px">showing the first 250 of ${changes.length}</p>` : ""}`
+        : `<p class="small muted" style="margin-top:14px">Nothing to change — the file matches the current wages.</p>`}`,
+    onSave: async () => {
+      const done = await api("POST", "/api/min-wages/import", { csv: text, apply: true });
+      await refreshData();
+      S.page["masters:min_wages"] = 1;
+      render();
+      toast(`Wages updated — ${done.updated} changed, ${done.created} added.`, "good");
+    },
+  });
 }
 
 /* ================================================================== USERS */
@@ -1465,6 +1530,8 @@ async function onViewClick(e) {
     else if (act === "health") await openHealth();
     else if (act === "masters-export") exportMasters();
     else if (act === "masters-import") importMasters();
+    else if (act === "wage-template") downloadWageTemplate();
+    else if (act === "wage-import") importWages();
     else if (act === "add-user") openUserForm(null);
     return;
   }

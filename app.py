@@ -399,6 +399,20 @@ class Handler(BaseHTTPRequestHandler):
             db.replace_masters(conn, data)
             return self._send_json(self._bootstrap(conn, user))
 
+        # ---- minimum-wage CSV (template + validated import) ----------------
+        if method == "GET" and path == "/api/min-wages/template":
+            body = db.min_wage_template(conn).encode("utf-8")
+            return self._send_bytes(body, "text/csv; charset=utf-8", "minimum-wages-template.csv")
+
+        if method == "POST" and path == "/api/min-wages/import":
+            if not self._require_admin(user):
+                return
+            payload = self._read_json()
+            text = payload.get("csv") or ""
+            if not text.strip():
+                return self._send_json({"error": "No CSV content received."}, status=400)
+            return self._send_json(db.min_wage_import(conn, text, bool(payload.get("apply"))))
+
         # ---- user administration (admin only) -----------------------------
         if path == "/api/users" or path.startswith("/api/users/"):
             if not self._require_admin(user):
