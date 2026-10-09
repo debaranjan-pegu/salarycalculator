@@ -200,9 +200,41 @@ const countryById = (id) => byId(S.masters.countries, id);
 const companyById = (id) => byId(S.masters.companies, id);
 
 /* ================================================================== auth screens */
+const EYE_ON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5.5 12 5.5 22.5 12 22.5 12 19 18.5 12 18.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg>`;
+const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.1A9.9 9.9 0 0 1 12 6c7 0 10.5 6 10.5 6a17 17 0 0 1-3.3 4"/><path d="M6.6 6.9A16.5 16.5 0 0 0 1.5 12S5 18 12 18a9.9 9.9 0 0 0 4-.8"/><path d="M9.9 9.9a3.2 3.2 0 0 0 4.2 4.2"/></svg>`;
+
+/** Put a show/hide eye on every password field (login, setup, recover, change). */
+function enhancePasswords(root = document) {
+  $$('input[type="password"]', root).forEach((input) => {
+    if (input.dataset.pw === "1") return;
+    input.dataset.pw = "1";
+    const wrap = document.createElement("div");
+    wrap.className = "pw";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "pw-toggle";
+    toggle.title = "Show password";
+    toggle.setAttribute("aria-label", "Show password");
+    toggle.innerHTML = EYE_ON;
+    toggle.addEventListener("click", () => {
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      toggle.innerHTML = showing ? EYE_ON : EYE_OFF;
+      toggle.title = showing ? "Show password" : "Hide password";
+      toggle.setAttribute("aria-label", toggle.title);
+      input.focus();
+    });
+    wrap.appendChild(toggle);
+  });
+}
+
 function showAuth(html) {
   $("#appRoot").classList.add("hidden");
   $("#authRoot").innerHTML = html;
+  enhancePasswords($("#authRoot"));
 }
 function showApp() {
   $("#authRoot").innerHTML = "";
