@@ -4,10 +4,11 @@ An offline salary-breakup calculator with a minimum-wage engine, editable
 masters, user accounts and a formatted Excel export. It replaces a spreadsheet
 with a proper database and a live web UI.
 
-- **No dependencies** — Python 3 standard library only. No `pip install`.
-- **Runs on Windows, macOS and Linux.**
-- **Works without internet.** All data stays in one `salary.db` file.
-- **Share with your team** over your local network, or just use it on your own PC.
+- **Nothing to install by hand** — if the machine has no Python 3, the setup
+  scripts install it for you.
+- **Runs on Windows, macOS and Linux.** No packages, no build step.
+- **Works without internet.** All your data stays in one `salary.db` file.
+- **Share with your team** over your local network, or use it on your own PC.
 
 ## Quick start
 
@@ -24,24 +25,28 @@ Or clone it yourself:
 ```bash
 git clone https://github.com/debaranjan-pegu/salarycalculator.git
 cd salarycalculator
-python3 app.py
+./run.sh          # macOS: double-click run.command
 ```
 
-Your browser opens at <http://127.0.0.1:8765/>.
+Your browser opens at <http://127.0.0.1:8765/>. If Python 3 is missing, the
+script offers to install it (Homebrew or the Apple command-line tools on macOS;
+`apt` / `dnf` / `pacman` / `zypper` on Linux; the official installer from
+python.org on Windows) and tells you exactly what to do if it cannot.
 
-> Windows: install [Python 3](https://www.python.org/downloads/) and tick
-> **“Add python.exe to PATH”**. That is the only prerequisite.
-
-## Two ways to run it
+## The things you can run
 
 | I want to… | macOS | Windows | Linux |
 | --- | --- | --- | --- |
 | **use it myself** | `run.command` | `run.bat` | `./run.sh` |
 | **share with my team** | `share.command` | `share.bat` | `./share.sh` |
 | **start automatically, like Excel** | `install.command` | `install.bat` | `./install.sh` |
-| **turn auto-start off** | `uninstall.command` | `uninstall.bat` | `./uninstall.sh` |
+| **stop starting automatically** | `uninstall.command` | `uninstall.bat` | `./uninstall.sh` |
+| **upgrade to the latest version** | `upgrade.command` | `upgrade.bat` | `./upgrade.sh` |
 
-### Sharing with the team
+Every one of these is a thin wrapper around `setup.sh` / `setup.bat`, so you can
+also just run `./setup.sh run|share|install|uninstall|upgrade`.
+
+### Sharing with your team
 
 Run `share.command` / `share.bat` / `share.sh` **on the one computer that will
 host it**. It prints an address like:
@@ -55,19 +60,19 @@ Give that address to your colleagues — **they install nothing**, they just ope
 it in a browser.
 
 **Access is by account, not by link.** You (the administrator) create a user for
-each colleague under **Users & Access**, and give them their username and the
-one-time password. They change it at first sign-in. So sharing the link alone
-does not let anyone in — which is what you want for salary data.
+each colleague under **Users & Access** and give them their username and the
+one-time password. They change it at first sign-in. Sharing the link alone does
+not let anyone in — which is what you want for salary data.
 
 The host serves **HTTPS** with a certificate it generates for itself on first
-use (`app/certs/`). Each person sees a one-time “certificate not trusted”
-warning; that is expected. To silence it permanently:
+use (`certs/`). Each person sees a one-time “certificate not trusted” warning;
+that is expected. To silence it permanently:
 
 - **macOS:** open `certs/salarycalc-cert.pem` in *Keychain Access* → *System* →
-  set to **Always Trust**.
+  **Always Trust**.
 - **Windows:** double-click `certs/salarycalc-cert.pem` → *Install Certificate*
   → *Local Machine* → *Trusted Root Certification Authorities*.
-- **Linux:** copy it to `/usr/local/share/ca-certificates/` and run
+- **Linux:** copy it to `/usr/local/share/ca-certificates/`, then
   `sudo update-ca-certificates`.
 
 Keep the host awake while the team uses it, and allow the incoming-connection
@@ -76,10 +81,25 @@ prompt the first time. Everyone should be on the same network (or your VPN).
 ### Starting automatically
 
 `install.command` / `install.bat` / `install.sh` register the app to start when
-you log in — the macOS one as a **LaunchAgent**, Windows as a **Startup
-shortcut** (hidden, no console window), Linux as a **systemd --user service**.
-Each asks whether to run in share mode. Double-clicking `run.command` later
-simply opens the app if it is already running, instead of starting a second copy.
+you log in — a **LaunchAgent** on macOS, a **Startup shortcut** on Windows (no
+console window), a **systemd --user service** on Linux. Each asks whether to run
+in share mode. Afterwards, double-clicking `run.command` simply opens the app if
+it is already running instead of starting a second copy.
+
+## Upgrading
+
+When a new version is released:
+
+- **macOS / Windows:** double-click `upgrade.command` / `upgrade.bat`.
+- **Linux:** `./upgrade.sh`
+
+That pulls the latest code from GitHub and restarts the app if it is running.
+**Your data is never touched** — everything lives in `salary.db`, which is not
+part of the code.
+
+You can also check from inside the app: **avatar menu → ℹ️ About → 🔄 Check for
+updates**. It compares your version with the published one and links to the
+project page.
 
 ## First run
 
@@ -92,7 +112,7 @@ it shows you.
 | **User** | calculator, records, masters, Excel export |
 
 **Lost the admin password?** Use *Forgot your password?* with the recovery code,
-or run `python3 app.py --reset-admin` on the host machine.
+or run `./setup.sh run` → then `python3 app.py --reset-admin` on the host.
 
 ## Features
 
@@ -114,7 +134,8 @@ or run `python3 app.py --reset-admin` on the host machine.
 
 ## Requirements
 
-Python **3.9+**. Nothing else — no packages, no build step, no database server.
+Python **3.9+**. If it is missing, the setup scripts install it for you.
+No packages, no build step, no database server.
 
 ## Security
 
@@ -124,13 +145,13 @@ Python **3.9+**. Nothing else — no packages, no build step, no database server
   SHA-256 digest stored; `Secure` flag over HTTPS.
 - Sign-in is rate-limited per address and locked per account; cross-origin
   state-changing requests are refused; TLS 1.2+ in share mode.
-- Authored for a **trusted local network**. To expose it to the internet, put it
-  behind a VPN or a proper reverse proxy.
+- Built for a **trusted local network**. To expose it to the internet, put it
+  behind a VPN or a reverse proxy.
 
 ## Files
 
 ```
-app.py          server, JSON API, auth, HTTPS
+app.py          server, JSON API, auth, HTTPS, update check
 auth.py         password hashing, sessions, recovery codes
 certgen.py      self-signed certificate generator (no dependencies)
 calc.py         calculation engine (pure functions)
@@ -139,18 +160,18 @@ xlsx.py         dependency-free .xlsx writer
 report.py       the formatted Excel report layout
 seed/           the India master data
 static/         index.html · styles.css · app.js
-run.*           run for yourself
-share.*         run for the team
-install.*       start automatically at login
-uninstall.*     stop starting automatically
+setup.sh/.bat   the real setup logic (Python install, auto-start)
+run.* share.*   thin wrappers for each mode
+install.* uninstall.* upgrade.*   start-up and update helpers
 bootstrap.sh    one-line installer (macOS / Linux)
-salary.db       created on first run — all your data
+VERSION         the released version
+salary.db       created on first run — all your data (never committed)
 ```
 
 ## Contributing
 
-Issues and pull requests are welcome. The whole app is plain Python and vanilla
-JavaScript with no build step, so you can edit and refresh.
+Issues and pull requests are welcome. Plain Python and vanilla JavaScript, no
+build step — edit and refresh.
 
 ## License
 

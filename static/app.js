@@ -1356,9 +1356,9 @@ async function handleAuthAction(act) {
         await api("POST", "/api/auth/logout", {}, { raw: true });
         return showLogin("You have been signed out.");
       }
-      case "about":
+      case "about": {
         closeUserMenu();
-        return modal({
+        modal({
           title: "About", sub: "", readOnly: true, saveLabel: "Close",
           body: `<div class="health-grid">
             <div class="kpi"><div class="k-label">Application</div><div class="k-value" style="font-size:16px">Salary Calculator</div></div>
@@ -1369,8 +1369,32 @@ async function handleAuthAction(act) {
           </div>
           ${S.network && S.urls && S.urls.length ? `<p class="small muted" style="margin-top:12px">Team address</p>
             <div class="recov-box" style="font-size:13px;letter-spacing:0">${esc(S.urls[0])}</div>` : ""}
-          <p class="small muted" style="margin-top:12px">Runs fully offline. The database is the single file <b>salary.db</b> beside the app.</p>`,
+          <div class="divider"></div>
+          <div class="toolbar" style="margin:0">
+            <button class="btn sm" id="checkUpdates">🔄 Check for updates</button>
+            <span class="small muted">Installed v${esc(S.version)}</span>
+          </div>
+          <div id="updateResult" style="margin-top:10px"></div>
+          <p class="small muted" style="margin-top:14px">To upgrade, run <b>upgrade.command</b> (macOS), <b>upgrade.bat</b> (Windows)
+            or <b>./setup.sh upgrade</b> (Linux). Your data in <b>salary.db</b> is never touched.</p>`,
         });
+        const btn = $("#checkUpdates");
+        if (btn) {
+          btn.addEventListener("click", async () => {
+            const box = $("#updateResult");
+            btn.disabled = true; btn.textContent = "Checking…";
+            try {
+              const r = await api("GET", "/api/update/check");
+              if (r.error) box.innerHTML = `<div class="notice warn"><span class="glyph">⚠️</span><div>${esc(r.error)}</div></div>`;
+              else if (r.update_available) box.innerHTML = `<div class="notice info"><span class="glyph">⬆️</span><div>Version <b>${esc(r.latest)}</b> is available — you are on ${esc(r.current)}.
+                <a href="${esc(r.page)}" target="_blank" rel="noopener">Open the project page</a> and run the upgrade script.</div></div>`;
+              else box.innerHTML = `<div class="notice good"><span class="glyph">✅</span><div>You are on the latest version (${esc(r.current)}).</div></div>`;
+            } catch (err) { box.innerHTML = `<div class="notice bad"><span class="glyph">⛔</span><div>${esc(err.message)}</div></div>`; }
+            btn.disabled = false; btn.textContent = "🔄 Check for updates";
+          });
+        }
+        return;
+      }
     }
   } catch (err) {
     if (err.message !== "Please sign in.") toast(err.message, "bad");

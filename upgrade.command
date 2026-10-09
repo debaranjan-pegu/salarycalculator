@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop the Salary Calculator starting automatically (macOS).
+# Update the Salary Calculator to the latest version (macOS).
 cd "$(dirname "$0")" || exit 1
-./setup.sh uninstall
+./setup.sh upgrade
 read -n 1 -s -r -p "Press any key to close…"

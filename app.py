@@ -38,7 +38,23 @@ import db
 import report
 
 APP_NAME = "Salary Calculator"
-APP_VERSION = "1.3.0"
+REPO_SLUG = "debaranjan-pegu/salarycalculator"
+
+
+def _read_version() -> str:
+    """The version comes from the VERSION file, so an upgrade carries it along."""
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "VERSION"), encoding="utf-8") as fh:
+            value = fh.read().strip()
+            if value:
+                return value
+    except OSError:
+        pass
+    return "1.3.0"
+
+
+APP_VERSION = _read_version()
 COOKIE = "sc_session"
 COOKIE_MAX_AGE = auth.SESSION_DAYS * 24 * 3600
 LOGIN_WINDOW = 300          # seconds
@@ -388,6 +404,22 @@ class Handler(BaseHTTPRequestHandler):
             if not self._require_admin(user):
                 return
             return self._users(conn, method, path, user)
+
+        if method == "GET" and path == "/api/update/check":
+            latest, error = None, None
+            try:
+                url = f"https://raw.githubusercontent.com/{REPO_SLUG}/main/VERSION"
+                with urllib.request.urlopen(url, timeout=6) as resp:
+                    latest = resp.read().decode("utf-8", "ignore").strip()
+            except Exception as exc:
+                error = f"Could not reach GitHub ({exc.__class__.__name__})."
+            return self._send_json({
+                "current": APP_VERSION,
+                "latest": latest,
+                "update_available": bool(latest and latest != APP_VERSION),
+                "page": f"https://github.com/{REPO_SLUG}",
+                "error": error,
+            })
 
         if method == "GET" and path == "/api/validate":
             return self._send_json(db.validate_data(conn))
