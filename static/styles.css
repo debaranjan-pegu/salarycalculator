@@ -185,14 +185,16 @@ body {
 .card-head .grow { flex: 1; }
 .card-head .tag { font-size: 11px; color: var(--muted-2); }
 
-.grid-2 { display: grid; grid-template-columns: minmax(340px, 1.05fr) 1.6fr; gap: 18px; align-items: start; }
+.grid-2 { display: grid; grid-template-columns: minmax(340px, 1.05fr) 1.6fr; gap: 18px; align-items: stretch; }
+/* side-by-side cards already have the grid gap — drop the stacked-card margin */
+.grid-2 > .card + .card { margin-top: 0; }
 @media (max-width: 1180px) { .grid-2 { grid-template-columns: 1fr; } }
 
 /* ---------------------------------------------------------------- forms */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .field > label { font-size: 12px; color: var(--muted); font-weight: 550; letter-spacing: 0.2px; }
 .field .help { font-size: 11px; color: var(--muted-2); }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
 .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
 input, select, textarea {
@@ -379,14 +381,22 @@ select.native-hidden { display: none; }
   --header-h: 64px;
   --thead-bg: #131c36;                        /* opaque, so scrolled rows can't show through */
   --section-bg: rgba(140, 160, 210, 0.20);    /* the grey band on a section heading row */
+  --total-bg: rgba(140, 160, 210, 0.14);      /* sub-totals, so they read apart from the rows */
+  --total-bg-strong: rgba(140, 160, 210, 0.24);
 }
 html[data-theme="light"] {
   --thead-bg: #ffffff;
   --section-bg: #e9ecf2;
+  --total-bg: #eff3fa;
+  --total-bg-strong: #e2e9f6;
 }
 
 /* clear grey band across a section heading row */
 tr.group-row td { background: var(--section-bg); }
+
+/* sub-totals and grand totals get their own tint; the last row is take-home */
+tr.total-row td { background: var(--total-bg); }
+tr.total-row:last-child td { background: var(--total-bg-strong); }
 
 /* the sidebar brand sits on the same line as the header row */
 .sidebar { padding: 0 16px 22px; }
@@ -445,7 +455,7 @@ tr.group-row td { background: var(--section-bg); }
 .notes:hover .notes-pop,
 .notes:focus .notes-pop,
 .notes:focus-within .notes-pop { display: block; animation: fade 0.12s ease; }
-.notes-item { font-size: 12.5px; line-height: 1.55; color: var(--text); }
+.notes-item { display: block; font-size: 12.5px; line-height: 1.55; color: var(--text); }
 .notes-item + .notes-item { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; }
 
 /* inline field validation */

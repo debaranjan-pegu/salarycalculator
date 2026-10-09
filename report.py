@@ -14,8 +14,8 @@ INK = "1E1B4B"        # indigo-950
 HEAD = "312E81"       # indigo-900
 SECTION = "E9ECF2"    # grey band behind a section heading
 SECTION_TX = "334155"
-TOTAL_BG = "EEF2FF"
-CTC_BG = "DBEAFE"
+TOTAL_BG = "EDF1F7"   # light grey-blue so sub-totals stand out from the rows
+CTC_BG = "D6E4FF"     # a clearer blue for the two CTC lines
 TAKE_BG = "FDE68A"
 WARN_BG = "FEF9C3"
 INFO_LB = "F1F5F9"
@@ -110,7 +110,7 @@ def build(location: dict, current: dict, proposed: dict,
 
     def row(label, cm, ca, pm, pa, kind="num", label_style=None):
         nonlocal r
-        ls = label_style or ("total_l" if kind in ("total", "ctc", "take") else "value")
+        ls = label_style or {"total": "total_l", "ctc": "ctc_l", "take": "take_l"}.get(kind, "value")
         wb.cell(r, 1, label, st[ls])
         wb.cell(r, 2, nz(cm), st[kind])
         wb.cell(r, 3, nz(ca), st[kind])

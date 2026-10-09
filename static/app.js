@@ -839,6 +839,7 @@ function resultsSkeleton() {
       <span class="chip">Level <b data-v="level">—</b></span>
       <span class="chip">Band <b data-v="band">—</b></span>
       <span class="chip">Insurance cover <b data-v="insurance">—</b></span>
+      <span data-v="notices"></span>
     </div>
     <div style="margin-top:16px">
       <div class="inline" style="justify-content:space-between">
@@ -848,7 +849,6 @@ function resultsSkeleton() {
       <div class="comp-bar">${segSpan}</div>
       <div class="legend">${legend}</div>
     </div>
-    <div data-v="notices" style="margin-top:16px"></div>
     <div class="card-head" style="margin-top:20px"><h3>Breakup</h3><div class="grow"></div>
       <span class="tag">monthly · annual</span></div>
     <div class="table-wrap">
@@ -946,11 +946,11 @@ function patchResults(r) {
     ? (notes[0].length > 56 ? notes[0].slice(0, 56) + "…" : notes[0])
     : `${notes.length} notes`;
   const notesHtml = notes.length
-    ? `<div class="notes" tabindex="0">
+    ? `<span class="notes" tabindex="0">
          <span class="notes-pill">⚠️ ${esc(label)}</span>
-         <div class="notes-pop">${notes.map((w) =>
-            `<div class="notes-item">${esc(w)}</div>`).join("")}</div>
-       </div>`
+         <span class="notes-pop">${notes.map((w) =>
+            `<span class="notes-item">${esc(w)}</span>`).join("")}</span>
+       </span>`
     : "";
   setHtml("notices", notesHtml);
 
