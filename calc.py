@@ -88,10 +88,7 @@ def compute(inputs: dict[str, Any], settings: dict[str, Any] | None = None,
     floor = _num(min_wage)
     basic = max(computed_basic, floor)
     min_wage_applied = floor > 0 and basic > computed_basic + 0.5
-    if min_wage_applied:
-        warnings.append(
-            f"Basic raised from {computed_basic:,.0f} to the {floor:,.0f} minimum wage."
-        )
+    # (the Basic row in the breakup states this inline, so no separate notice)
     if floor <= 0:
         warnings.append("No minimum wage is defined for this location/category.")
 

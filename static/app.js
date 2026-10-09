@@ -940,12 +940,19 @@ function patchResults(r) {
     .replace(/\d{1,3}(?:,\d{3})+/g,
       (m) => Number(m.replace(/,/g, "")).toLocaleString(localeOf(r.country_id)))
     .replace(/\d{4,}/g, (m) => Number(m).toLocaleString(localeOf(r.country_id)));
-  const noticeHtml = (r.warnings || []).map((w) => {
-    const kind = /cannot be honoured/.test(w) ? "bad" : /No minimum wage/.test(w) ? "info" : "warn";
-    const glyph = kind === "bad" ? "⛔" : kind === "info" ? "ℹ️" : "⚠️";
-    return `<div class="notice ${kind}"><span class="glyph">${glyph}</span><div>${esc(localise(w))}</div></div>`;
-  }).join("");
-  setHtml("notices", noticeHtml);
+
+  const notes = (r.warnings || []).map(localise);
+  const label = notes.length === 1
+    ? (notes[0].length > 56 ? notes[0].slice(0, 56) + "…" : notes[0])
+    : `${notes.length} notes`;
+  const notesHtml = notes.length
+    ? `<div class="notes" tabindex="0">
+         <span class="notes-pill">⚠️ ${esc(label)}</span>
+         <div class="notes-pop">${notes.map((w) =>
+            `<div class="notes-item">${esc(w)}</div>`).join("")}</div>
+       </div>`
+    : "";
+  setHtml("notices", notesHtml);
 
   const er = r.employer_pf + r.gratuity + r.esic_employer + r.asset_allowance;
   const cells = {
