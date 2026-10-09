@@ -624,6 +624,7 @@ class Handler(BaseHTTPRequestHandler):
             "states": db.list_rows(conn, "states"),
             "cities": db.list_rows(conn, "cities"),
             "companies": db.list_rows(conn, "companies"),
+            "grades": db.list_rows(conn, "grades"),
             "min_wages": db.list_rows(conn, "min_wages"),
             "employees": db.list_employees(conn),
             "breakups": db.list_breakups(conn),
@@ -661,6 +662,10 @@ class Handler(BaseHTTPRequestHandler):
         result["state_id"] = _int_or_none(body.get("state_id"))
         result["category_id"] = _int_or_none(body.get("category_id"))
         result["currency_symbol"] = symbol
+        level, band = db.grade_for(conn, country_id, result.get("proposed_ctc") or 0)
+        result["level"] = level["name"] if level else ""
+        result["band"] = band["name"] if band else ""
+        result["insurance"] = level["insurance"] if level else 0
         return result
 
     def _export(self, conn, body):
@@ -683,12 +688,16 @@ class Handler(BaseHTTPRequestHandler):
         company = next((c for c in db.list_rows(conn, "companies")
                         if c["id"] == _int_or_none(body.get("company_id"))), None)
 
+        level, band = db.grade_for(conn, country_id, proposed.get("proposed_ctc") or 0)
         location = {
             "name": body.get("name") or body.get("label") or "—",
             "company": (company or {}).get("name"),
             "experience": body.get("experience"),
             "age": body.get("age"),
             "designation": body.get("designation"),
+            "level": level["name"] if level else None,
+            "band": band["name"] if band else None,
+            "insurance": level["insurance"] if level else 0,
             "country": country.get("name"),
             "state": state["name"] if state else None,
             "city": city["name"] if city else None,

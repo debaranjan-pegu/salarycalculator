@@ -186,7 +186,8 @@ const S = {
 
 const DEFAULT_DRAFT = {
   country_id: null, state_id: null, city_id: null, category_id: null, company_id: null,
-  name: "Manjunatha C", designation: "Accounts Executive", experience: "2 years", age: null,
+  name: "Manjunatha C", designation: "Accounts Executive",
+  experience: "2 years", experience_years: 2, experience_months: 0, age: null,
   previous_ctc: 314598, increment_pct: 10, proposed_ctc: null,
   vp_pct: 0, basic_pct: 50, hra_pct: 50, pf_type: "12% on Basic",
   asset_allowance: 1499, pt: 200, income_tax: 0, label: "", company_name: "",
@@ -486,6 +487,7 @@ function applyBootstrap(data) {
     countries: data.countries || [], categories: data.categories || [],
     states: data.states || [], cities: data.cities || [],
     companies: (data.companies || []).filter((c) => c.is_active !== 0 || true),
+    grades: data.grades || [],
     min_wages: data.min_wages || [],
   };
   S.employees = data.employees || [];
@@ -592,7 +594,14 @@ function viewCalculator() {
         <div class="field"><label>Designation</label>
           <input type="text" data-field="designation" data-raw="1" value="${esc(d.designation)}" placeholder="Role" /></div>
         <div class="field"><label>Experience</label>
-          <input type="text" data-field="experience" data-raw="1" value="${esc(d.experience)}" placeholder="e.g. 2 years" /></div>
+          <div class="row" style="gap:8px">
+            <select data-field="experience_years" data-num="1">
+              ${Array.from({length: 46}, (_, y) => '<option value="' + y + '"' + (Number(d.experience_years) === y ? " selected" : "") + '>' + y + (y === 1 ? " year" : " years") + '</option>').join("")}
+            </select>
+            <select data-field="experience_months" data-num="1">
+              ${Array.from({length: 12}, (_, m) => '<option value="' + m + '"' + (Number(d.experience_months) === m ? " selected" : "") + '>' + m + (m === 1 ? " month" : " months") + '</option>').join("")}
+            </select>
+          </div></div>
       </div>
 
       <div class="row-3">
@@ -678,6 +687,15 @@ function viewCalculator() {
   };
 }
 
+function experienceLabel(d) {
+  const y = Number(d.experience_years) || 0;
+  const m = Number(d.experience_months) || 0;
+  const parts = [];
+  if (y) parts.push(y + (y === 1 ? " year" : " years"));
+  if (m) parts.push(m + (m === 1 ? " month" : " months"));
+  return parts.join(" ") || d.experience || "";
+}
+
 function calcPayload() {
   const d = S.draft;
   return {
@@ -685,6 +703,9 @@ function calcPayload() {
     previous_ctc: d.previous_ctc, increment_pct: d.increment_pct, proposed_ctc: d.proposed_ctc,
     vp_pct: d.vp_pct, basic_pct: d.basic_pct, hra_pct: d.hra_pct, pf_type: d.pf_type,
     asset_allowance: d.asset_allowance, pt: d.pt, income_tax: d.income_tax, label: d.label,
+    name: d.name, designation: d.designation, age: d.age, company_id: d.company_id,
+    experience: experienceLabel(d),
+    experience_years: d.experience_years, experience_months: d.experience_months,
   };
 }
 
@@ -779,6 +800,11 @@ function resultsSkeleton() {
       <div class="kpi" data-kpi="mw"><div class="k-label">Minimum wage</div>
         <div class="k-value" data-v="min_wage">—</div><div class="k-sub" data-v="feasibility"></div></div>
     </div>
+    <div class="chips" style="margin-top:14px">
+      <span class="chip">Level <b data-v="level">—</b></span>
+      <span class="chip">Band <b data-v="band">—</b></span>
+      <span class="chip">Insurance cover <b data-v="insurance">—</b></span>
+    </div>
     <div style="margin-top:16px">
       <div class="inline" style="justify-content:space-between">
         <span class="small muted">Monthly cost composition</span>
@@ -840,6 +866,9 @@ function patchResults(r) {
   set("basic", num(r.basic));
   set("take_home", num(r.take_home));
   set("min_wage", r.min_wage > 0 ? num(r.min_wage) : "—");
+  set("level", r.level || "—");
+  set("band", r.band || "—");
+  set("insurance", r.insurance ? num(r.insurance) : "—");
   set("feasibility", r.feasible ? "CTC balanced ✓" : "CTC must rise");
   set("variance", (r.ctc_variance > 0 ? "+" : "") + num(r.ctc_variance));
   setHtml("floor_badge", r.min_wage > 0
@@ -929,7 +958,8 @@ function openSaveDialog(asNew) {
 
       const employee = await api("POST", "/api/employees", {
         name, country_id: d.country_id, state_id: d.state_id, city_id: d.city_id,
-        company_id: companyId, designation: d.designation, experience: d.experience, age: d.age,
+        company_id: companyId, designation: d.designation, experience: experienceLabel(d),
+        experience_years: d.experience_years, experience_months: d.experience_months, age: d.age,
       });
       const payload = {
         employee_id: employee.id, label: label || name,
@@ -1079,6 +1109,19 @@ const MASTER_DEFS = {
         options: [{ value: 1, label: "Yes" }, { value: 0, label: "No" }] },
     ],
   },
+  grades: {
+    label: "Levels & bands", addLabel: "Add level or band",
+    cols: [["kind", "Kind"], ["name", "Name"], ["up_to_ctc", "Up to CTC", "num"], ["insurance", "Insurance", "num"]],
+    fields: [
+      { k: "country_id", label: "Country", type: "fk", src: () => S.masters.countries },
+      { k: "kind", label: "Kind", type: "select",
+        options: [{ value: "level", label: "Level" }, { value: "band", label: "Band" }] },
+      { k: "name", label: "Name (e.g. Level1, Band-4)", type: "text" },
+      { k: "up_to_ctc", label: "Up to CTC (annual)", type: "number" },
+      { k: "insurance", label: "Insurance cover (levels only)", type: "number" },
+      { k: "sort_order", label: "Sort order", type: "number" },
+    ],
+  },
   cities: {
     label: "Cities", addLabel: "Add city",
     cols: [["name", "City"], ["state", "State"], ["rank", "Rank", "num"]],
@@ -1173,6 +1216,9 @@ function displayCell(tab, row, key) {
   if (key === "category") return (catById(row.category_id) || {}).name || "—";
   if (key === "is_active") return row.is_active ? "Yes" : "No";
   if (key === "amount") return money(row.amount);
+  if (key === "kind") return row.kind === "band" ? "Band" : "Level";
+  if (key === "up_to_ctc") return money(row.up_to_ctc);
+  if (key === "insurance") return row.insurance ? money(row.insurance) : "—";
   return row[key] ?? "";
 }
 

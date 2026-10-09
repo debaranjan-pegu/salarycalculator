@@ -81,6 +81,16 @@ CREATE TABLE IF NOT EXISTS companies (
     UNIQUE (country_id, name)
 );
 
+CREATE TABLE IF NOT EXISTS grades (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    country_id  INTEGER REFERENCES countries(id) ON DELETE CASCADE,
+    kind        TEXT NOT NULL,               -- 'level' or 'band'
+    name        TEXT NOT NULL,
+    up_to_ctc   REAL NOT NULL DEFAULT 0,     -- highest annual CTC that maps here
+    insurance   REAL NOT NULL DEFAULT 0,     -- sum insured (used for levels)
+    sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS app_meta (
     key     TEXT PRIMARY KEY,
     value   TEXT
@@ -159,6 +169,30 @@ DEFAULT_SETTINGS: dict[str, Any] = {
 
 DEFAULT_COMPANIES = ["Posiflex", "Quinta", "Portwell", "Mustek"]
 
+# From the original workbook: Level (+ its insurance cover) and Band thresholds,
+# each read as "the highest annual CTC that maps here".
+DEFAULT_GRADES = [
+    ("level", "Level1", 400_000, 200_000),
+    ("level", "Level2", 1_000_000, 300_000),
+    ("level", "Level3", 1_800_000, 300_000),
+    ("level", "Level4", 4_000_000, 400_000),
+    ("band", "Band-2", 200_000, 0),
+    ("band", "Band-3", 300_000, 0),
+    ("band", "Band-4", 400_000, 0),
+    ("band", "Band-1", 500_000, 0),
+    ("band", "Band-2", 700_000, 0),
+    ("band", "Band-3", 800_000, 0),
+    ("band", "Band-4", 1_000_000, 0),
+    ("band", "Band-1", 1_200_000, 0),
+    ("band", "Band-2", 1_400_000, 0),
+    ("band", "Band-3", 1_600_000, 0),
+    ("band", "Band-4", 1_800_000, 0),
+    ("band", "Band-1", 2_000_000, 0),
+    ("band", "Band-2", 2_200_000, 0),
+    ("band", "Band-3", 2_400_000, 0),
+    ("band", "Band-4", 99_999_999, 0),
+]
+
 MASTER_TABLES = {
     "countries": ["code", "name", "currency_code", "currency_symbol", "locale"],
     "categories": ["country_id", "code", "name", "sort_order"],
@@ -166,11 +200,16 @@ MASTER_TABLES = {
     "cities": ["state_id", "name", "rank"],
     "min_wages": ["country_id", "state_id", "city_id", "category_id", "amount", "effective_from", "notes"],
     "companies": ["country_id", "name", "code", "is_active"],
+    "grades": ["country_id", "kind", "name", "up_to_ctc", "insurance", "sort_order"],
 }
 
 # columns added after the first release (applied to pre-existing databases)
 MIGRATIONS = {
-    "employees": {"company_id": "INTEGER REFERENCES companies(id) ON DELETE SET NULL"},
+    "employees": {
+        "company_id": "INTEGER REFERENCES companies(id) ON DELETE SET NULL",
+        "experience_years": "INTEGER",
+        "experience_months": "INTEGER",
+    },
     "breakups": {
         "created_by": "INTEGER REFERENCES users(id) ON DELETE SET NULL",
         "updated_at": "TEXT",
@@ -210,6 +249,14 @@ def init_db(conn: sqlite3.Connection, seed_path: str = SEED_PATH) -> None:
             for name in DEFAULT_COMPANIES:
                 conn.execute("INSERT OR IGNORE INTO companies (country_id, name) VALUES (?,?)",
                              (country_id["id"], name))
+    if conn.execute("SELECT COUNT(*) AS n FROM grades").fetchone()["n"] == 0:
+        country_id = conn.execute("SELECT id FROM countries ORDER BY id LIMIT 1").fetchone()
+        if country_id:
+            for order, (kind, name, up_to, insurance) in enumerate(DEFAULT_GRADES):
+                conn.execute(
+                    """INSERT INTO grades (country_id, kind, name, up_to_ctc, insurance, sort_order)
+                       VALUES (?,?,?,?,?,?)""",
+                    (country_id["id"], kind, name, up_to, insurance, order))
     conn.execute("UPDATE breakups SET updated_at=created_at WHERE updated_at IS NULL")
     conn.commit()
 
@@ -313,6 +360,14 @@ def seed_masters(conn: sqlite3.Connection, seed: dict[str, Any]) -> None:
         if name:
             conn.execute("INSERT OR IGNORE INTO companies (country_id, name) VALUES (?,?)",
                          (default_country, name))
+
+    for order, grade in enumerate(seed.get("grades", [])):
+        conn.execute(
+            """INSERT INTO grades (country_id, kind, name, up_to_ctc, insurance, sort_order)
+               VALUES (?,?,?,?,?,?)""",
+            (default_country, grade.get("kind", "level"), grade.get("name", ""),
+             grade.get("up_to_ctc", 0), grade.get("insurance", 0),
+             grade.get("sort_order", order)))
     conn.commit()
 
 
@@ -541,7 +596,7 @@ def purge_sessions(conn: sqlite3.Connection) -> None:
 # ---------------------------------------------------------------- employees / breakups
 
 EMPLOYEE_COLS = ["name", "country_id", "state_id", "city_id", "company_id",
-                 "designation", "experience", "age"]
+                 "designation", "experience", "experience_years", "experience_months", "age"]
 
 
 def list_employees(conn: sqlite3.Connection) -> list[dict]:
@@ -654,7 +709,7 @@ def delete_breakup(conn: sqlite3.Connection, row_id: int) -> bool:
 def _clear_masters(conn: sqlite3.Connection) -> None:
     """Remove every master table. Users, sessions and metadata are preserved."""
     for table in ("breakups", "employees", "min_wages", "cities", "states",
-                  "categories", "settings", "companies", "countries"):
+                  "categories", "settings", "companies", "grades", "countries"):
         conn.execute(f"DELETE FROM {table}")
     conn.commit()
 
@@ -669,6 +724,11 @@ def reset_to_seed(conn: sqlite3.Connection, seed_path: str = SEED_PATH) -> None:
         for name in DEFAULT_COMPANIES:
             conn.execute("INSERT OR IGNORE INTO companies (country_id, name) VALUES (?,?)",
                          (country["id"], name))
+        for order, (kind, name, up_to, insurance) in enumerate(DEFAULT_GRADES):
+            conn.execute(
+                """INSERT INTO grades (country_id, kind, name, up_to_ctc, insurance, sort_order)
+                   VALUES (?,?,?,?,?,?)""",
+                (country["id"], kind, name, up_to, insurance, order))
     conn.commit()
 
 
@@ -686,6 +746,9 @@ def export_masters(conn: sqlite3.Connection) -> dict:
                      JOIN states s ON s.id = ci.state_id ORDER BY s.name, ci.name""")]
     companies = [{"name": r["name"], "code": r["code"]}
                  for r in conn.execute("SELECT * FROM companies ORDER BY name")]
+    grades = [{"kind": r["kind"], "name": r["name"], "up_to_ctc": r["up_to_ctc"],
+               "insurance": r["insurance"], "sort_order": r["sort_order"]}
+              for r in conn.execute("SELECT * FROM grades ORDER BY kind, up_to_ctc, id")]
     min_wages = [{"city": r["city"], "state": r["state"], "category": r["category"],
                   "amount": r["amount"], "effective_from": r["effective_from"], "notes": r["notes"]}
                  for r in conn.execute(
@@ -698,7 +761,7 @@ def export_masters(conn: sqlite3.Connection) -> dict:
                         ORDER BY state, city""")]
     return {"schema": 1, "countries": countries, "categories": categories,
             "states": states, "cities": cities, "companies": companies,
-            "min_wages": min_wages}
+            "grades": grades, "min_wages": min_wages}
 
 
 def replace_masters(conn: sqlite3.Connection, data: dict) -> None:
@@ -897,3 +960,19 @@ def min_wage_import(conn: sqlite3.Connection, text: str, apply_changes: bool = F
         conn.commit()
         report["applied"] = True
     return report
+
+
+def grade_for(conn: sqlite3.Connection, country_id: int, ctc: float):
+    """Resolve the Level and Band an annual CTC falls into.
+
+    Each row stores the *highest* CTC that maps to it, so the first row whose
+    ceiling the CTC does not exceed is the answer.
+    """
+    value = float(ctc or 0)
+    level = conn.execute(
+        """SELECT * FROM grades WHERE country_id=? AND kind='level' AND up_to_ctc >= ?
+            ORDER BY up_to_ctc ASC, sort_order ASC LIMIT 1""", (country_id, value)).fetchone()
+    band = conn.execute(
+        """SELECT * FROM grades WHERE country_id=? AND kind='band' AND up_to_ctc >= ?
+            ORDER BY up_to_ctc ASC, sort_order ASC LIMIT 1""", (country_id, value)).fetchone()
+    return (dict(level) if level else None, dict(band) if band else None)
