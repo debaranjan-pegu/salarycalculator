@@ -544,8 +544,8 @@ function sampleDraft() {
 }
 
 /* ------------------------------------------------------------------ router */
-const VIEWS = ["calculator", "records", "masters", "settings", "users"];
-const isAdminOnlyView = (v) => v === "users";
+const VIEWS = ["calculator", "records", "masters", "settings", "users", "backup"];
+const isAdminOnlyView = (v) => v === "users" || v === "backup";
 
 function setView(view) {
   if (!VIEWS.includes(view)) view = "calculator";
@@ -565,12 +565,13 @@ function render() {
     masters: ["Masters", "Countries, companies, states, cities, categories and minimum wages"],
     settings: ["Statutory Rules", "PF, ESIC, gratuity and default percentages"],
     users: ["Users & Access", "Who can sign in and what they can do"],
+    backup: ["Backup & restore", "Take your data with you, or bring it in from another machine"],
   };
   const [title, sub] = titles[S.view] || ["", ""];
   $("#pageTitle").textContent = title;
   $("#pageSub").textContent = sub;
 
-  const views = { calculator: viewCalculator, records: viewRecords, masters: viewMasters, settings: viewSettings, users: viewUsers };
+  const views = { calculator: viewCalculator, records: viewRecords, masters: viewMasters, settings: viewSettings, users: viewUsers, backup: viewBackup };
   const out = views[S.view]() || { html: "" };
   $("#view").innerHTML = out.html;
   $("#topActions").innerHTML = out.actions || "";
@@ -1545,6 +1546,139 @@ function showPassword(title, password) {
   });
 }
 
+/* ================================================================== BACKUP */
+const BACKUP_SECTIONS = [
+  { key: "countries", label: "Countries", count: () => S.masters.countries.length },
+  { key: "categories", label: "Wage categories", count: () => S.masters.categories.length },
+  { key: "states", label: "States / Territories", count: () => S.masters.states.length },
+  { key: "cities", label: "Cities", count: () => S.masters.cities.length },
+  { key: "companies", label: "Companies", count: () => S.masters.companies.length },
+  { key: "grades", label: "Levels & bands", count: () => S.masters.grades.length },
+  { key: "min_wages", label: "Minimum wages", count: () => S.masters.min_wages.length },
+  { key: "settings", label: "Statutory rules",
+    count: () => Object.values(S.settingsByCountry).reduce((n, o) => n + Object.keys(o || {}).length, 0) },
+  { key: "employees", label: "People", count: () => S.employees.length },
+  { key: "breakups", label: "Saved records", count: () => S.breakups.length },
+  { key: "users", label: "Users & their passwords", count: () => S.users.length, warn: true },
+];
+
+function backupSelection() {
+  if (!S.backupSections) {
+    S.backupSections = new Set(BACKUP_SECTIONS.filter((s) => s.key !== "users").map((s) => s.key));
+  }
+  return S.backupSections;
+}
+
+function viewBackup() {
+  const chosen = backupSelection();
+  const rows = BACKUP_SECTIONS.map((s) => `
+    <label class="pick ${s.warn ? "warn" : ""}">
+      <input type="checkbox" data-backup="${s.key}" ${chosen.has(s.key) ? "checked" : ""} />
+      <span class="pick-text">${esc(s.label)}</span>
+      <span class="muted small">${fmtNum(s.count())} rows</span>
+    </label>`).join("");
+  const total = BACKUP_SECTIONS.filter((s) => chosen.has(s.key)).reduce((n, s) => n + s.count(), 0);
+
+  return {
+    html: `
+    <div class="grid-2">
+      <div class="card fade-in">
+        <div class="card-head"><h3>Export your data</h3><div class="grow"></div>
+          <span class="tag">one JSON file</span></div>
+        <p class="small muted">Tick what to include, save the file, then hand it to the other
+          machine and import it there. Same masters, rules, records and settings — ready to use.</p>
+        <div class="btn-row" style="margin-bottom:10px">
+          <button class="btn sm ghost" data-act="backup-all">Select all</button>
+          <button class="btn sm ghost" data-act="backup-none">Select none</button>
+          <span class="badge ghost">${fmtNum(total)} rows selected</span>
+        </div>
+        <div class="picker">${rows}</div>
+        <div class="notice warn"><span class="glyph">🔑</span><div><b>Users &amp; their passwords</b> is
+          left out by default, so the other person simply creates their own administrator and none of
+          your logins travel. Tick it only for your own backup — it lets those exact accounts sign in.</div></div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn primary" data-act="backup-export">⬇️ Export ${fmtNum(total)} rows</button>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-head"><h3>Restore from a file</h3><div class="grow"></div>
+          <span class="tag">overwrites</span></div>
+        <p class="small muted">Choose a backup file. You will see exactly what is inside it, and
+          what it will replace, before anything changes — and you can cancel.</p>
+        <div class="btn-row">
+          <button class="btn" data-act="backup-import">⬆️ Choose a backup file…</button>
+        </div>
+        <div id="backupPreview" style="margin-top:14px"></div>
+      </div>
+    </div>`,
+  };
+}
+
+function exportBackup() {
+  const sections = Array.from(backupSelection());
+  if (!sections.length) { toast("Tick at least one thing to export.", "bad"); return; }
+  const a = document.createElement("a");
+  a.href = "/api/backup/export?sections=" + encodeURIComponent(sections.join(","));
+  a.click();
+  toast("Backup downloading…", "good");
+}
+
+function chooseBackupFile() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,application/json";
+  input.addEventListener("change", async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    let payload;
+    try { payload = JSON.parse(await file.text()); }
+    catch (e) { toast("That file is not a readable backup (invalid JSON).", "bad"); return; }
+    showBackupPreview(payload, file.name);
+  });
+  input.click();
+}
+
+function showBackupPreview(payload, filename) {
+  const sections = payload.sections || Object.keys(payload.data || {});
+  const data = payload.data || {};
+  if (!sections.length) { toast("That file has no data sections.", "bad"); return; }
+  const rows = sections.map((name) => {
+    const meta = BACKUP_SECTIONS.find((s) => s.key === name);
+    const count = Array.isArray(data[name]) ? data[name].length : 0;
+    return `<tr><td>${esc(meta ? meta.label : name)}</td><td class="num">${fmtNum(count)}</td>
+            <td>${meta && meta.warn ? '<span class="badge warn">replaces logins</span>' : ""}</td></tr>`;
+  }).join("");
+  const warnUsers = sections.includes("users");
+
+  modal({
+    title: "Import this backup?",
+    sub: `${filename} · exported ${esc(String(payload.exported_at || "?").replace("T", " "))} · v${esc(payload.version || "?")}`,
+    saveLabel: "Replace and import",
+    body: `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Section</th><th class="num">Rows</th><th></th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      <div class="notice warn" style="margin-top:14px"><span class="glyph">⚠️</span><div>
+        These ${sections.length} sections are <b>replaced completely</b> — what you have now is
+        discarded. Anything not listed is left untouched.${warnUsers
+          ? "<br><b>Users are included:</b> you will be signed out and must sign in with an account from the file." : ""}
+      </div></div>`,
+    onSave: async () => {
+      const res = await api("POST", "/api/backup/import", { backup: payload });
+      if (res.signed_out) {
+        showLogin("Backup restored. Please sign in with an account from the file.");
+        return;
+      }
+      applyBootstrap(res.bootstrap);
+      render();
+      const imported = res.imported || {};
+      const n = Object.values(imported).reduce((a, b) => a + b, 0);
+      toast(`Imported ${fmtNum(n)} rows across ${Object.keys(imported).length} sections.`, "good");
+    },
+  });
+}
+
 /* ================================================================== SETTINGS */
 function viewSettings() {
   const countryId = S.draft.country_id || (S.masters.countries[0] || {}).id;
@@ -1811,6 +1945,16 @@ async function onViewClick(e) {
     return;
   }
 
+  // backup section ticks
+  const cb = e.target.closest("[data-backup]");
+  if (cb) {
+    const chosen = backupSelection();
+    const key = cb.dataset.backup;
+    if (chosen.has(key)) chosen.delete(key); else chosen.add(key);
+    render();
+    return;
+  }
+
   const btn = e.target.closest("[data-act]");
   if (btn) {
     const act = btn.dataset.act;
@@ -1835,6 +1979,10 @@ async function onViewClick(e) {
     else if (act === "masters-import") importMasters();
     else if (act === "wage-template") downloadWageTemplate();
     else if (act === "wage-import") importWages();
+    else if (act === "backup-all") { S.backupSections = new Set(BACKUP_SECTIONS.map((s) => s.key)); render(); }
+    else if (act === "backup-none") { S.backupSections = new Set(); render(); }
+    else if (act === "backup-export") exportBackup();
+    else if (act === "backup-import") chooseBackupFile();
     else if (act === "add-user") openUserForm(null);
     return;
   }

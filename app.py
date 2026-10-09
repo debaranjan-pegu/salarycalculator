@@ -407,6 +407,41 @@ class Handler(BaseHTTPRequestHandler):
             db.replace_masters(conn, data)
             return self._send_json(self._bootstrap(conn, user))
 
+        # ---- full backup / restore (admin) --------------------------------
+        if method == "GET" and path == "/api/backup/export":
+            if not self._require_admin(user):
+                return
+            requested = [s.strip() for s in (params.get("sections") or "").split(",") if s.strip()]
+            sections = [s for s in db.BACKUP_SECTION_ORDER if s in requested]
+            if not sections:
+                sections = [s for s in db.BACKUP_SECTION_ORDER if s != "users"]
+            payload = {
+                "app": APP_NAME,
+                "version": APP_VERSION,
+                "exported_at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "sections": sections,
+                "data": db.backup_export(conn, sections),
+            }
+            body = json.dumps(payload, indent=1, ensure_ascii=False).encode("utf-8")
+            stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+            return self._send_bytes(body, "application/json; charset=utf-8",
+                                    f"salarycalc-backup-{stamp}.json")
+
+        if method == "POST" and path == "/api/backup/import":
+            if not self._require_admin(user):
+                return
+            payload = self._read_json().get("backup") or self._read_json()
+            try:
+                stats = db.backup_import(conn, payload)
+            except Exception as exc:
+                return self._send_json({"error": str(exc)}, status=400)
+            took_users = "users" in (payload.get("sections") or [])
+            return self._send_json({
+                "imported": stats,
+                "signed_out": took_users,
+                "bootstrap": None if took_users else self._bootstrap(conn, user),
+            })
+
         # ---- minimum-wage CSV (template + validated import) ----------------
         if method == "GET" and path == "/api/min-wages/template":
             body = db.min_wage_template(conn).encode("utf-8")

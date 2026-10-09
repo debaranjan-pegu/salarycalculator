@@ -152,6 +152,28 @@ or run `python3 app.py --reset-admin` on the host machine.
   *Proposed CTC*, matching the original workbook.
 - **Themes** — System / Light / Dark, and a collapsible menu.
 
+## Backup and restore
+
+**Backup & restore** (administrators) moves everything between machines in one
+JSON file:
+
+- **Export** — tick what to include. Countries, masters, statutory rules, people
+  and saved records are ticked by default; **Users & their passwords** is
+  deliberately **off**, so whoever you hand the file to creates their own
+  administrator and none of your logins travel. Tick it only for your own
+  backup, and then those exact accounts can sign in on the other machine.
+- **Import** — choose a file and you are shown exactly what is inside it (each
+  section and its row count) and what it will replace, *before* anything
+  changes. You can cancel. On import the listed sections are **replaced
+  wholesale**; anything not in the file is left untouched.
+
+Ids are preserved, so every link between tables survives the round trip. The
+import runs as a single transaction — if anything goes wrong, **nothing is
+written at all** and your data is exactly as it was.
+
+**Masters → ⬇️ Export / ⬆️ Import** is the lighter version: just the master data
+(countries, wages, companies, levels and bands) without people or records.
+
 ## Requirements
 
 Python **3.9+** — installed automatically if missing, or use the Windows

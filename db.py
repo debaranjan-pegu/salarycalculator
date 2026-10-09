@@ -690,8 +690,8 @@ def save_breakup(conn: sqlite3.Connection, employee_id: int | None, label: str,
         row_id = breakup_id
     else:
         cur = conn.execute(
-            """INSERT INTO breakups (employee_id, label, inputs_json, result_json, created_by)
-               VALUES (?,?,?,?,?)""",
+            """INSERT INTO breakups (employee_id, label, inputs_json, result_json, created_by, updated_at)
+               VALUES (?,?,?,?,?,datetime('now'))""",
             (employee_id, label, json.dumps(inputs), json.dumps(result), created_by),
         )
         row_id = cur.lastrowid
@@ -1004,3 +1004,110 @@ def merge_world_countries(conn: sqlite3.Connection, path: str | None = None) -> 
         added += cur.rowcount or 0
     conn.commit()
     return added
+
+
+# ---------------------------------------------------------------- backup / restore
+
+# parents first: this order is also the insert order
+BACKUP_SECTION_ORDER = ["countries", "categories", "states", "cities", "companies",
+                        "grades", "min_wages", "settings", "users", "employees", "breakups"]
+
+BACKUP_DEPENDS = {
+    "categories": ["countries"], "states": ["countries"], "cities": ["states"],
+    "companies": ["countries"], "grades": ["countries"], "min_wages": ["countries"],
+    "settings": ["countries"], "employees": ["countries"], "breakups": ["employees"],
+}
+
+
+def backup_export(conn: sqlite3.Connection, sections: list[str]) -> dict:
+    """Every row of the chosen sections, exactly as stored."""
+    data: dict[str, list] = {}
+    for name in BACKUP_SECTION_ORDER:
+        if name in sections:
+            data[name] = [dict(r) for r in conn.execute(f"SELECT * FROM {name}")]
+    if "users" in sections:                       # the recovery code travels with them
+        data["app_meta"] = [dict(r) for r in conn.execute("SELECT * FROM app_meta")]
+    return data
+
+
+def _insert_rows(conn: sqlite3.Connection, table: str, rows: list[dict],
+                 override: dict | None = None) -> int:
+    """Insert rows using only the columns this database actually has.
+
+    A NULL for a NOT NULL column that has a default is left out, so the default
+    fills it — that keeps a file written by an older version usable.
+    """
+    info = {r["name"]: r for r in conn.execute(f"PRAGMA table_info({table})")}
+    columns = list(info)
+    count = 0
+    for original in rows:
+        row = dict(original)
+        if override:
+            row.update({k: v for k, v in override.items() if k in columns})
+        keys = []
+        for c in columns:
+            if c not in row:
+                continue
+            if row[c] is None and info[c]["notnull"] and info[c]["dflt_value"] is not None:
+                continue
+            keys.append(c)
+        if not keys:
+            continue
+        conn.execute(
+            f"INSERT INTO {table} ({','.join(keys)}) VALUES ({','.join('?' for _ in keys)})",
+            [row[k] for k in keys])
+        count += 1
+    return count
+
+
+def backup_import(conn: sqlite3.Connection, payload: dict) -> dict:
+    """Replace the sections in the file, wholesale, in one transaction.
+
+    Ids are preserved, so every reference between tables stays valid. If it
+    fails for any reason nothing is written at all - the database is left
+    exactly as it was.
+    """
+    requested = payload.get("sections") or []
+    sections = [s for s in BACKUP_SECTION_ORDER if s in requested]
+    data = payload.get("data") or {}
+    if not sections:
+        raise ValueError("That file does not contain any data sections.")
+
+    missing = sorted({d for s in sections for d in BACKUP_DEPENDS.get(s, []) if d not in sections})
+    if missing:
+        raise ValueError("The file is missing data these sections depend on: " + ", ".join(missing))
+    for name in sections:
+        if not isinstance(data.get(name), list):
+            raise ValueError(f"The file has no “{name}” table.")
+
+    override = {}
+    if "companies" not in sections:
+        override["company_id"] = None
+    if "cities" not in sections:
+        override["city_id"] = None
+    if "states" not in sections:
+        override["state_id"] = None
+    if "countries" not in sections:
+        override["country_id"] = None
+    record_override = {"created_by": None} if "users" not in sections else {}
+
+    stats: dict[str, int] = {}
+    try:
+        for name in reversed(BACKUP_SECTION_ORDER):      # children first
+            if name in sections:
+                conn.execute(f"DELETE FROM {name}")
+        if "users" in sections:
+            conn.execute("DELETE FROM sessions")
+        for name in BACKUP_SECTION_ORDER:                # parents first
+            if name not in sections:
+                continue
+            stats[name] = _insert_rows(conn, name, data[name],
+                                       record_override if name == "breakups" else override)
+        if "users" in sections and isinstance(data.get("app_meta"), list):
+            conn.execute("DELETE FROM app_meta")
+            stats["app_meta"] = _insert_rows(conn, "app_meta", data["app_meta"])
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    return stats
