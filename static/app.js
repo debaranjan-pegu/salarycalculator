@@ -909,7 +909,10 @@ function patchResults(r) {
   set("basic_note", r.min_wage_applied
     ? `· raised from ${num(r.computed_basic)} to the ${num(r.min_wage)} minimum wage`
     : `· ${r.basic_pct}% of the monthly CTC`);
-  set("hra_note", r.hra > 0.5 ? `· ${r.hra_pct}% of Basic` : "· nothing left at this CTC");
+  const hraReduced = r.hra > 0.5 && r.desired_hra && r.hra < r.desired_hra - 0.5;
+  set("hra_note", r.hra > 0.5
+    ? `· ${r.hra_pct}% of Basic${hraReduced ? ", reduced to fit" : ""}`
+    : "· reduced to nothing to fit the minimum wage");
   set("feasibility", r.feasible ? "CTC balanced ✓" : "CTC must rise");
   set("variance", (r.ctc_variance > 0 ? "+" : "") + num(r.ctc_variance));
   setHtml("floor_badge", r.min_wage > 0
@@ -933,10 +936,14 @@ function patchResults(r) {
     if (leg) leg.style.display = vals[s.key] > 0 ? "" : "none";
   });
 
+  const localise = (text) => String(text)
+    .replace(/\d{1,3}(?:,\d{3})+/g,
+      (m) => Number(m.replace(/,/g, "")).toLocaleString(localeOf(r.country_id)))
+    .replace(/\d{4,}/g, (m) => Number(m).toLocaleString(localeOf(r.country_id)));
   const noticeHtml = (r.warnings || []).map((w) => {
     const kind = /cannot be honoured/.test(w) ? "bad" : /No minimum wage/.test(w) ? "info" : "warn";
     const glyph = kind === "bad" ? "⛔" : kind === "info" ? "ℹ️" : "⚠️";
-    return `<div class="notice ${kind}"><span class="glyph">${glyph}</span><div>${esc(w)}</div></div>`;
+    return `<div class="notice ${kind}"><span class="glyph">${glyph}</span><div>${esc(localise(w))}</div></div>`;
   }).join("");
   setHtml("notices", noticeHtml);
 

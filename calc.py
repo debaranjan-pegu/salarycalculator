@@ -122,17 +122,20 @@ def compute(inputs: dict[str, Any], settings: dict[str, Any] | None = None,
         )
 
     min_ctc_required = None
+    min_ctc_with_hra = None
     if not feasible:
         gpa = 0.0
         hra = 0.0
-        cash_probe = basic + desired_hra
-        esic_employer = cash_probe * esic_er_pct / 100 if cash_probe < esic_ceiling else 0.0
-        required_monthly = basic + desired_hra + employer_pf + gratuity + esic_employer + asset
-        min_ctc_required = _r(required_monthly * months)
-        warnings.append(
-            "Minimum wage cannot be honoured while keeping the CTC unchanged. "
-            f"CTC would need to rise to about {min_ctc_required:,.0f}."
-        )
+        # The hard floor: the minimum wage plus the employer's statutory costs,
+        # with HRA and the allowance squeezed to nothing. Nothing at all can be
+        # paid below this, so it is the smallest CTC that can carry the wage.
+        esic_floor = basic * esic_er_pct / 100 if basic < esic_ceiling else 0.0
+        min_ctc_required = _r((basic + employer_pf + gratuity + esic_floor + asset) * months)
+        # The same wage while still paying HRA at the usual rate, for comparison.
+        cash_full = basic + desired_hra
+        esic_full = cash_full * esic_er_pct / 100 if cash_full < esic_ceiling else 0.0
+        min_ctc_with_hra = _r(
+            (basic + desired_hra + employer_pf + gratuity + esic_full + asset) * months)
 
     if feasible:
         gpa = target_monthly - basic - hra - employer_pf - gratuity - esic_employer - asset
@@ -154,7 +157,8 @@ def compute(inputs: dict[str, Any], settings: dict[str, Any] | None = None,
                          employer_pf, gratuity, esic_employer, asset, vp_annual, months)
 
     if not feasible and not inputs.get("_no_raise"):
-        return _raise_to_minimum(inputs, settings, min_wage, min_ctc_required, proposed_ctc)
+        return _raise_to_minimum(inputs, settings, min_wage, min_ctc_required,
+                                 min_ctc_with_hra, proposed_ctc)
 
     return {
         "label": inputs.get("label") or "",
@@ -170,6 +174,7 @@ def compute(inputs: dict[str, Any], settings: dict[str, Any] | None = None,
         "min_wage": floor,
         "min_wage_applied": min_wage_applied,
         "min_ctc_required": min_ctc_required,
+        "min_ctc_with_hra": min_ctc_with_hra,
         "feasible": feasible,
         "basic": basic,
         "computed_basic": computed_basic,
@@ -272,7 +277,8 @@ def _build_lines(basic, hra, gpa, employee_pf, pt, esic_employee, income_tax,
 
 
 def _raise_to_minimum(inputs: dict, settings: dict | None, min_wage: float,
-                      min_ctc_required: float, requested_ctc: float) -> dict:
+                      min_ctc_required: float, min_ctc_with_hra: float,
+                      requested_ctc: float) -> dict:
     """Recalculate at the CTC the minimum wage requires.
 
     Paying less than that is not legal, so the useful answer is the compliant
@@ -290,11 +296,20 @@ def _raise_to_minimum(inputs: dict, settings: dict | None, min_wage: float,
     result["requested_ctc"] = _r(requested_ctc)
     result["raised_to_minimum"] = True
     result["min_ctc_required"] = min_ctc_required
-    result["warnings"] = [
+    result["min_ctc_with_hra"] = min_ctc_with_hra
+    notes = [
         f"The minimum wage of {_r(min_wage):,.0f} cannot be paid on a CTC of "
-        f"{_r(requested_ctc):,.0f}. Raised it to {result['proposed_ctc']:,.0f} — the "
-        "lowest CTC that can carry it."
-    ] + [w for w in result.get("warnings", []) if "cannot be honoured" not in w]
+        f"{_r(requested_ctc):,.0f}. Raised it to {result['proposed_ctc']:,.0f} — the lowest "
+        "CTC that can carry it, with HRA and the allowance squeezed to fit."
+    ]
+    if min_ctc_with_hra and min_ctc_with_hra > result["proposed_ctc"] + 1:
+        notes.append(
+            f"To also pay HRA at the usual {result.get('hra_pct', 50):g}% of Basic, "
+            f"the CTC would need to be about {min_ctc_with_hra:,.0f}."
+        )
+    result["warnings"] = notes + [
+        w for w in result.get("warnings", [])
+        if "cannot be honoured" not in w and "HRA reduced" not in w]
     return result
 
 

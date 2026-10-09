@@ -128,11 +128,15 @@ or run `python3 app.py --reset-admin` on the host machine.
   warnings. Every dropdown is searchable.
 - **Forwards or backwards** — set the *Proposed CTC* directly and the implied
   increment is shown live, or enter a **target monthly take-home** and let the
-  app solve for the CTC that pays it. When the minimum wage makes the CTC
-  impossible, one click raises it to the figure required.
-- **Minimum-wage rule** — the Basic is floored at the statutory minimum; HRA and
-  the General Purpose Allowance are adjusted so the CTC stays the same. If the
-  floor cannot be met at that CTC, the app says so and shows the CTC required.
+  app solve for the CTC that pays it.
+- **Minimum-wage rule, adjusted automatically** — the Basic is floored at the
+  statutory minimum, and the CTC you asked for is then preserved by working down
+  a ladder: **HRA first** (reduced, and the app says so), then the **General
+  Purpose Allowance**. Only when even those are at zero — because the minimum
+  wage plus the employer's PF and gratuity already exceed your CTC — does the
+  CTC rise, and then only to the **smallest CTC that can legally carry the
+  wage**. The app shows both figures: the lowest legal CTC, and what a full
+  50% HRA would need.
 - **Saved Records** — save (it asks for the candidate name and records who saved
   it and when), reopen with ✏️ to edit and re-save, duplicate, delete.
 - **Masters** — Countries, Companies, States, Cities, Wage categories and
