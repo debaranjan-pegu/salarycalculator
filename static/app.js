@@ -480,6 +480,7 @@ async function boot() {
     return;
   }
   S.version = status.version || "";
+  S.portable = !!status.portable;
   updateVersionLabel();
   if (!status.initialized) return showSetup();
   if (!status.authenticated) return showLogin();
@@ -1888,8 +1889,11 @@ async function handleAuthAction(act) {
             <span class="small muted">Installed v${esc(S.version)}</span>
           </div>
           <div id="updateResult" style="margin-top:10px"></div>
-          <p class="small muted" style="margin-top:14px">To upgrade, run <b>upgrade.command</b> (macOS), <b>upgrade.bat</b> (Windows)
-            or <b>./setup.sh upgrade</b> (Linux). Your data in <b>salary.db</b> is never touched.</p>`,
+          ${S.portable
+            ? `<p class="small muted" style="margin-top:14px">To upgrade, double-click <b>Update.cmd</b> in this folder.
+               Your data in <b>salary.db</b> is never touched.</p>`
+            : `<p class="small muted" style="margin-top:14px">To upgrade, run <b>upgrade.command</b> (macOS), <b>upgrade.bat</b> (Windows)
+               or <b>./setup.sh upgrade</b> (Linux). Your data in <b>salary.db</b> is never touched.</p>`}`,
         });
         const btn = $("#checkUpdates");
         if (btn) {
@@ -2112,8 +2116,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   syncThemeButtons();
   try {
-    if (localStorage.getItem("salarycalc-sidebar") === "collapsed") $("#appRoot").classList.add("collapsed");
-  } catch (e) {}
+    /* collapsed unless this browser was explicitly left expanded */
+    if (localStorage.getItem("salarycalc-sidebar") !== "open") $("#appRoot").classList.add("collapsed");
+  } catch (e) { $("#appRoot").classList.add("collapsed"); }
   const onSchemeChange = () => { if (currentThemeChoice() === "system") applyTheme("system"); };
   if (mq.addEventListener) mq.addEventListener("change", onSchemeChange);
   else if (mq.addListener) mq.addListener(onSchemeChange);

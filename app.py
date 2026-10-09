@@ -66,6 +66,10 @@ CERT_DIR = os.path.join(BASE_DIR, "certs")
 CERT_FILE = os.path.join(CERT_DIR, "salarycalc-cert.pem")
 KEY_FILE = os.path.join(CERT_DIR, "salarycalc-key.pem")
 
+# The portable Windows bundle ships its own interpreter in python\ next to this
+# file; that install cannot run upgrade.bat, so the UI points it at Update.cmd.
+PORTABLE = os.path.isdir(os.path.join(BASE_DIR, "python"))
+
 PUBLIC_PATHS = {
     ("GET", "/api/auth/status"),
     ("POST", "/api/auth/setup"),
@@ -83,6 +87,40 @@ def _int_or_none(value):
         return int(value) if value not in (None, "") else None
     except (TypeError, ValueError):
         return None
+
+
+def _version_tuple(value: str) -> tuple:
+    """'v1.6.10' -> (1, 6, 10), so 1.6.10 sorts above 1.6.9."""
+    parts = re.findall(r"\d+", str(value or ""))
+    return tuple(int(p) for p in parts) or (0,)
+
+
+def _latest_release() -> tuple[str | None, str | None]:
+    """The newest published release version, and an error message if any.
+
+    The Releases API is the authoritative answer and is generated per request.
+    raw.githubusercontent.com is not: it serves ``VERSION`` with
+    ``cache-control: max-age=300``, so a check run just after a release could
+    honestly report the previous one.
+    """
+    try:
+        request = urllib.request.Request(
+            f"https://api.github.com/repos/{REPO_SLUG}/releases/latest",
+            headers={"Accept": "application/vnd.github+json", "User-Agent": APP_NAME})
+        with urllib.request.urlopen(request, timeout=6) as response:
+            tag = (json.loads(response.read() or b"{}") or {}).get("tag_name")
+        if tag:
+            return str(tag).strip().lstrip("vV"), None
+    except Exception:
+        pass
+
+    # No releases yet (or rate-limited): fall back to the version on main.
+    try:
+        url = f"https://raw.githubusercontent.com/{REPO_SLUG}/main/VERSION"
+        with urllib.request.urlopen(url, timeout=6) as response:
+            return response.read().decode("utf-8", "ignore").strip().lstrip("vV"), None
+    except Exception as exc:
+        return None, f"Could not reach GitHub ({exc.__class__.__name__})."
 
 
 def _client_ip(handler) -> str:
@@ -279,6 +317,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_json({
                 "app": APP_NAME,
                 "version": APP_VERSION,
+                "portable": PORTABLE,
                 "initialized": db.has_users(conn),
                 "authenticated": bool(user),
                 "user": db.public_user(user) if user else None,
@@ -463,18 +502,14 @@ class Handler(BaseHTTPRequestHandler):
             return self._users(conn, method, path, user)
 
         if method == "GET" and path == "/api/update/check":
-            latest, error = None, None
-            try:
-                url = f"https://raw.githubusercontent.com/{REPO_SLUG}/main/VERSION"
-                with urllib.request.urlopen(url, timeout=6) as resp:
-                    latest = resp.read().decode("utf-8", "ignore").strip()
-            except Exception as exc:
-                error = f"Could not reach GitHub ({exc.__class__.__name__})."
+            latest, error = _latest_release()
             return self._send_json({
                 "current": APP_VERSION,
                 "latest": latest,
-                "update_available": bool(latest and latest != APP_VERSION),
-                "page": f"https://github.com/{REPO_SLUG}",
+                "update_available": bool(latest)
+                    and _version_tuple(latest) > _version_tuple(APP_VERSION),
+                "page": f"https://github.com/{REPO_SLUG}/releases",
+                "portable": PORTABLE,
                 "error": error,
             })
 

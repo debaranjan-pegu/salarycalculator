@@ -77,12 +77,29 @@ where tar  >nul 2>nul || goto :notools
 for /f "usebackq delims=" %%v in ("%HERE%\VERSION") do set "CURRENT=%%v"
 if not defined CURRENT goto :damaged
 echo This copy is version %CURRENT%.
-echo Asking GitHub for the latest version...
+echo Asking GitHub for the latest release...
+
+REM The Releases API is generated per request. The raw VERSION file is served
+REM with cache-control: max-age=300, so right after a release it can still
+REM report the previous version - which looks like "nothing happened".
+set "LATEST="
+curl -fsSL -o "%TEMP%\salarycalc-latest.json" "https://api.github.com/repos/%REPO%/releases/latest"
+if errorlevel 1 goto :tryraw
+for /f "tokens=2 delims=:," %%a in ('findstr /i tag_name "%TEMP%\salarycalc-latest.json"') do set "RAW=%%a"
+if not defined RAW goto :tryraw
+set LATEST=%RAW: =%
+set LATEST=%LATEST:"=%
+set LATEST=%LATEST:v=%
+goto :havever
+
+:tryraw
 curl -fsSL -o "%TEMP%\salarycalc-version.txt" "https://raw.githubusercontent.com/%REPO%/main/VERSION"
 if errorlevel 1 goto :offline
 for /f "usebackq delims=" %%v in ("%TEMP%\salarycalc-version.txt") do set "LATEST=%%v"
+
+:havever
 if not defined LATEST goto :offline
-echo The latest version is %LATEST%.
+echo The latest release is %LATEST%.
 if /i "%CURRENT%"=="%LATEST%" goto :current
 
 set "TARGET=%PARENT%\SalaryCalculator-Windows-%LATEST%"
@@ -120,19 +137,26 @@ move "%STAGE%\SalaryCalculator-Windows" "%TARGET%" >nul
 if errorlevel 1 goto :nomove
 
 echo.
-echo Done. Version %LATEST% is ready at:
-echo    %TARGET%
+echo ================================================================
+echo   Version %LATEST% is ready. YOUR CURRENT APP IS STILL %CURRENT%.
+echo ================================================================
 echo.
-echo Next: close this app's window, open that folder and double-click
-echo "Salary Calculator.cmd". Your records came across unchanged.
-echo The old folder can be deleted afterwards.
+echo   1. Close THIS window  - that stops the app you are running now.
+echo   2. In the folder that just opened, double-click
+echo      "Salary Calculator.cmd" to start %LATEST%.
 echo.
+echo Your records came across unchanged. The old folder can be deleted.
+echo.
+start "" explorer "%TARGET%"
 pause
 exit /b 0
 
 :current
 echo.
-echo You are already on the latest version. Nothing to do.
+echo You already have the latest release (%LATEST%). Nothing to do.
+echo.
+echo (If a release was published in the last few minutes, run Update.cmd
+echo again in a moment.)
 echo.
 pause
 exit /b 0
